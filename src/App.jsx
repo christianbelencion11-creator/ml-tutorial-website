@@ -17,11 +17,15 @@ function App() {
   return (
     <Router>
       <div className="App">
-        {/* UPDATED NAVIGATION - PMC GAMING THEME */}
+        {/* UPDATED NAVIGATION WITH YOUR PERSONAL LOGO */}
         <Navbar className="pmc-navbar" expand="lg" fixed="top" variant="dark">
           <Container>
             <Navbar.Brand as={Link} to="/" className="pmc-brand">
-              <FaSkull className="brand-icon" />
+              <img 
+                src="https://scontent.fmnl30-3.fna.fbcdn.net/v/t39.30808-6/322707149_1841631216235507_1073256195438098560_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=jFDwVIaZtScQ7kNvwEg0lvg&_nc_oc=Adk2WMixZ9b4un2aRcg1Bo7K3kaMNJmIMV4wqchF5p9rIqekrgK3isNqlqtt2O49QrE&_nc_zt=23&_nc_ht=scontent.fmnl30-3.fna&_nc_gid=27SX6zTygGpOBStnP2yJgA&oh=00_AftJl8UEOFcZHUI1yIMRP477cjCcJJ4nk6nKnaMx_a5n4A&oe=699B876C"
+                alt="PMC Gaming Logo"
+                className="pmc-logo-img"
+              />
               <span className="brand-text">PMC GAMING</span>
               <span className="brand-tag">TUTORIALS</span>
             </Navbar.Brand>
@@ -54,7 +58,7 @@ function App() {
                 />
               </div>
 
-              {/* Admin Button - NAKAHIWALAY SA RIGHT */}
+              {/* Admin Button */}
               <Nav.Link as={Link} to="/admin" className="pmc-admin-btn">
                 <FaSkull /> ADMIN
               </Nav.Link>

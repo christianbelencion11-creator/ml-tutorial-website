@@ -792,3 +792,62 @@ body {
   transform: scale(1.05);
   box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
 }
+
+/* ===== PMC GAMING LOGO STYLES ===== */
+.pmc-logo-img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ff0000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  margin-right: 10px;
+}
+
+.pmc-brand:hover .pmc-logo-img {
+  transform: scale(1.1) rotate(5deg);
+  border-color: #ff6600;
+  box-shadow: 0 0 25px rgba(255, 102, 0, 0.7);
+}
+
+/* Brand text adjustments */
+.pmc-brand {
+  display: flex !important;
+  align-items: center;
+  text-decoration: none;
+  padding: 5px 15px !important;
+  border: 2px solid #ff0000;
+  background: #0a0000;
+  transition: all 0.3s;
+}
+
+.brand-text {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 2px;
+  margin-right: 5px;
+}
+
+.brand-tag {
+  font-size: 0.8rem;
+  color: #ff0000;
+  letter-spacing: 3px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pmc-logo-img {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .brand-text {
+    font-size: 1.2rem;
+  }
+  
+  .brand-tag {
+    display: none; /* Hide tag on mobile */
+  }
+}
