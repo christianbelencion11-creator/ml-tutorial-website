@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Form, Button, Table, Alert, Modal, Card } from 'react-bootstrap'
-import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaLink, FaImage } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaLink, FaImage, FaYoutube, FaSync } from 'react-icons/fa'
 import { database } from '../firebase'
 import { ref, push, set, remove, onValue } from 'firebase/database'
+import YouTubeAuto from './YouTubeAuto'
 
 function Admin() {
   // ============================================
@@ -16,7 +17,7 @@ function Admin() {
   
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)  // For hide/unhide
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [tutorials, setTutorials] = useState([])
   const [editingId, setEditingId] = useState(null)
@@ -24,6 +25,7 @@ function Admin() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [tutorialToDelete, setTutorialToDelete] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeTab, setActiveTab] = useState('manual') // 'manual' or 'youtube'
   
   const [formData, setFormData] = useState({
     title: '',
@@ -56,7 +58,7 @@ function Admin() {
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true)
       setError('')
-      setPassword('') // Clear password after login
+      setPassword('')
     } else {
       setError('❌ Incorrect password!')
     }
@@ -116,6 +118,7 @@ function Admin() {
     setFormData(tutorial)
     setEditingId(tutorial.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    setActiveTab('manual')
   }
 
   const handleDeleteClick = (tutorial) => {
@@ -187,9 +190,6 @@ function Admin() {
                         {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
                       </Button>
                     </div>
-                    <Form.Text className="text-muted password-hint">
-                      {/* No default password shown here */}
-                    </Form.Text>
                   </Form.Group>
 
                   <Button type="submit" variant="danger" className="w-100 py-2 fw-bold" size="lg">
@@ -254,229 +254,293 @@ function Admin() {
         </Alert>
       )}
 
-      <Row>
-        {/* Form Column */}
-        <Col lg={5} className="mb-4">
-          <Card className="admin-form-card border-0 shadow-sm">
-            <Card.Header className="bg-danger text-white py-3">
-              <h4 className="mb-0">
-                {editingId ? <><FaEdit className="me-2" /> Edit Tutorial</> : <><FaPlus className="me-2" /> Add New Tutorial</>}
-              </h4>
-            </Card.Header>
-            <Card.Body className="p-4">
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">
-                    <FaVideo className="me-2 text-danger" /> Title
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    placeholder="e.g., Ling Advanced Guide"
-                    required
-                    className="py-2"
-                  />
-                </Form.Group>
-
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-bold">
-                        <FaTag className="me-2 text-danger" /> Category
-                      </Form.Label>
-                      <Form.Select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleChange}
-                        className="py-2"
-                      >
-                        <option value="Hero Guide">Hero Guide</option>
-                        <option value="Builds">Builds</option>
-                        <option value="Tips">Tips</option>
-                        <option value="Gameplay">Gameplay</option>
-                        <option value="Strategy">Strategy</option>
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-bold">
-                        <FaCalendarAlt className="me-2 text-danger" /> Date
-                      </Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="date"
-                        value={formData.date}
-                        onChange={handleChange}
-                        className="py-2"
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Describe what this tutorial covers..."
-                    rows={3}
-                    required
-                    className="py-2"
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">
-                    <FaImage className="me-2 text-danger" /> Thumbnail URL
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="thumbnail"
-                    value={formData.thumbnail}
-                    onChange={handleChange}
-                    placeholder="https://i.imgur.com/example.jpg"
-                    required
-                    className="py-2"
-                  />
-                  <Form.Text className="text-muted">
-                    Use Imgur, Cloudinary, or any image hosting service
-                  </Form.Text>
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">
-                    <FaLink className="me-2 text-danger" /> YouTube Embed URL
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="youtubeUrl"
-                    value={formData.youtubeUrl}
-                    onChange={handleChange}
-                    placeholder="https://www.youtube.com/embed/VIDEO_ID"
-                    required
-                    className="py-2"
-                  />
-                  <Form.Text className="text-muted">
-                    Format: https://www.youtube.com/embed/VIDEO_ID
-                  </Form.Text>
-                </Form.Group>
-
-                <div className="d-flex gap-2 mt-4">
-                  <Button type="submit" variant="danger" className="flex-grow-1 py-2 fw-bold">
-                    {editingId ? <><FaSave className="me-2" /> Update</> : <><FaPlus className="me-2" /> Add Tutorial</>}
-                  </Button>
-                  {editingId && (
-                    <Button 
-                      variant="secondary" 
-                      className="py-2 px-4"
-                      onClick={() => {
-                        setEditingId(null)
-                        setFormData({
-                          title: '',
-                          description: '',
-                          thumbnail: '',
-                          youtubeUrl: '',
-                          category: 'Hero Guide',
-                          date: new Date().toISOString().split('T')[0]
-                        })
-                      }}
-                    >
-                      <FaTimes /> Cancel
-                    </Button>
-                  )}
-                </div>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-
-        {/* Table Column */}
-        <Col lg={7}>
-          <Card className="admin-table-card border-0 shadow-sm">
-            <Card.Header className="bg-dark text-white py-3">
-              <Row className="align-items-center">
-                <Col>
-                  <h4 className="mb-0">📚 Tutorials List</h4>
-                </Col>
-                <Col md={5}>
-                  <Form.Control
-                    type="text"
-                    placeholder="🔍 Search tutorials..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-dark text-white border-secondary"
-                  />
-                </Col>
-              </Row>
-            </Card.Header>
-            <Card.Body className="p-0">
-              {filteredTutorials.length === 0 ? (
-                <div className="text-center py-5">
-                  <p className="text-muted mb-0">No tutorials yet. Add your first tutorial!</p>
-                </div>
-              ) : (
-                <div className="table-responsive">
-                  <Table hover className="admin-table mb-0">
-                    <thead className="bg-light">
-                      <tr>
-                        <th>Thumbnail</th>
-                        <th>Title</th>
-                        <th>Category</th>
-                        <th>Date</th>
-                        <th className="text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTutorials.map(tutorial => (
-                        <tr key={tutorial.id}>
-                          <td>
-                            <img 
-                              src={tutorial.thumbnail} 
-                              alt={tutorial.title}
-                              style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
-                              onError={(e) => e.target.src = 'https://via.placeholder.com/50?text=No+Image'}
-                            />
-                          </td>
-                          <td className="fw-bold">{tutorial.title}</td>
-                          <td>
-                            <span className="badge bg-danger px-3 py-2">
-                              {tutorial.category}
-                            </span>
-                          </td>
-                          <td>{new Date(tutorial.date).toLocaleDateString()}</td>
-                          <td className="text-center">
-                            <Button 
-                              variant="warning" 
-                              size="sm" 
-                              className="me-2 px-3"
-                              onClick={() => handleEdit(tutorial)}
-                            >
-                              <FaEdit className="me-1" /> Edit
-                            </Button>
-                            <Button 
-                              variant="danger" 
-                              size="sm"
-                              className="px-3"
-                              onClick={() => handleDeleteClick(tutorial)}
-                            >
-                              <FaTrash className="me-1" /> Delete
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
-              )}
-            </Card.Body>
-          </Card>
+      {/* YouTube Auto Upload Section */}
+      <Row className="mb-4">
+        <Col lg={12}>
+          <YouTubeAuto />
         </Col>
       </Row>
+
+      {/* Tab Navigation */}
+      <Row className="mb-3">
+        <Col>
+          <div className="admin-tabs">
+            <Button 
+              variant={activeTab === 'manual' ? 'danger' : 'outline-danger'} 
+              className="me-2"
+              onClick={() => setActiveTab('manual')}
+            >
+              <FaPlus className="me-2" /> Manual Add
+            </Button>
+            <Button 
+              variant={activeTab === 'youtube' ? 'danger' : 'outline-danger'}
+              onClick={() => setActiveTab('youtube')}
+            >
+              <FaYoutube className="me-2" /> YouTube Auto
+            </Button>
+          </div>
+        </Col>
+      </Row>
+
+      {/* Manual Add Form */}
+      {activeTab === 'manual' && (
+        <Row>
+          <Col lg={5} className="mb-4">
+            <Card className="admin-form-card border-0 shadow-sm">
+              <Card.Header className="bg-danger text-white py-3">
+                <h4 className="mb-0">
+                  {editingId ? <><FaEdit className="me-2" /> Edit Tutorial</> : <><FaPlus className="me-2" /> Add New Tutorial</>}
+                </h4>
+              </Card.Header>
+              <Card.Body className="p-4">
+                <Form onSubmit={handleSubmit}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold">
+                      <FaVideo className="me-2 text-danger" /> Title
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleChange}
+                      placeholder="e.g., Ling Advanced Guide"
+                      required
+                      className="py-2"
+                    />
+                  </Form.Group>
+
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">
+                          <FaTag className="me-2 text-danger" /> Category
+                        </Form.Label>
+                        <Form.Select
+                          name="category"
+                          value={formData.category}
+                          onChange={handleChange}
+                          className="py-2"
+                        >
+                          <option value="Hero Guide">Hero Guide</option>
+                          <option value="Builds">Builds</option>
+                          <option value="Tips">Tips</option>
+                          <option value="Gameplay">Gameplay</option>
+                          <option value="Strategy">Strategy</option>
+                          <option value="Auto Upload">Auto Upload</option>
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">
+                          <FaCalendarAlt className="me-2 text-danger" /> Date
+                        </Form.Label>
+                        <Form.Control
+                          type="date"
+                          name="date"
+                          value={formData.date}
+                          onChange={handleChange}
+                          className="py-2"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold">Description</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      placeholder="Describe what this tutorial covers..."
+                      rows={3}
+                      required
+                      className="py-2"
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold">
+                      <FaImage className="me-2 text-danger" /> Thumbnail URL
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="thumbnail"
+                      value={formData.thumbnail}
+                      onChange={handleChange}
+                      placeholder="https://i.imgur.com/example.jpg"
+                      required
+                      className="py-2"
+                    />
+                    <Form.Text className="text-muted">
+                      Use Imgur, Cloudinary, or any image hosting service
+                    </Form.Text>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold">
+                      <FaLink className="me-2 text-danger" /> YouTube Embed URL
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="youtubeUrl"
+                      value={formData.youtubeUrl}
+                      onChange={handleChange}
+                      placeholder="https://www.youtube.com/embed/VIDEO_ID"
+                      required
+                      className="py-2"
+                    />
+                    <Form.Text className="text-muted">
+                      Format: https://www.youtube.com/embed/VIDEO_ID
+                    </Form.Text>
+                  </Form.Group>
+
+                  <div className="d-flex gap-2 mt-4">
+                    <Button type="submit" variant="danger" className="flex-grow-1 py-2 fw-bold">
+                      {editingId ? <><FaSave className="me-2" /> Update</> : <><FaPlus className="me-2" /> Add Tutorial</>}
+                    </Button>
+                    {editingId && (
+                      <Button 
+                        variant="secondary" 
+                        className="py-2 px-4"
+                        onClick={() => {
+                          setEditingId(null)
+                          setFormData({
+                            title: '',
+                            description: '',
+                            thumbnail: '',
+                            youtubeUrl: '',
+                            category: 'Hero Guide',
+                            date: new Date().toISOString().split('T')[0]
+                          })
+                        }}
+                      >
+                        <FaTimes /> Cancel
+                      </Button>
+                    )}
+                  </div>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* Table Column */}
+          <Col lg={7}>
+            <Card className="admin-table-card border-0 shadow-sm">
+              <Card.Header className="bg-dark text-white py-3">
+                <Row className="align-items-center">
+                  <Col>
+                    <h4 className="mb-0">📚 Tutorials List</h4>
+                  </Col>
+                  <Col md={5}>
+                    <Form.Control
+                      type="text"
+                      placeholder="🔍 Search tutorials..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="bg-dark text-white border-secondary"
+                    />
+                  </Col>
+                </Row>
+              </Card.Header>
+              <Card.Body className="p-0">
+                {filteredTutorials.length === 0 ? (
+                  <div className="text-center py-5">
+                    <p className="text-muted mb-0">No tutorials yet. Add your first tutorial!</p>
+                  </div>
+                ) : (
+                  <div className="table-responsive">
+                    <Table hover className="admin-table mb-0">
+                      <thead className="bg-light">
+                        <tr>
+                          <th>Thumbnail</th>
+                          <th>Title</th>
+                          <th>Category</th>
+                          <th>Date</th>
+                          <th className="text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredTutorials.map(tutorial => (
+                          <tr key={tutorial.id}>
+                            <td>
+                              <img 
+                                src={tutorial.thumbnail} 
+                                alt={tutorial.title}
+                                style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
+                                onError={(e) => e.target.src = 'https://via.placeholder.com/50?text=No+Image'}
+                              />
+                            </td>
+                            <td className="fw-bold">
+                              {tutorial.title}
+                              {tutorial.autoImported && (
+                                <span className="ms-2 text-info" title="Auto-imported from YouTube">
+                                  <FaYoutube size={14} />
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <span className={`badge ${tutorial.category === 'Auto Upload' ? 'bg-info' : 'bg-danger'} px-3 py-2`}>
+                                {tutorial.category}
+                              </span>
+                            </td>
+                            <td>{new Date(tutorial.date).toLocaleDateString()}</td>
+                            <td className="text-center">
+                              <Button 
+                                variant="warning" 
+                                size="sm" 
+                                className="me-2 px-3"
+                                onClick={() => handleEdit(tutorial)}
+                              >
+                                <FaEdit className="me-1" /> Edit
+                              </Button>
+                              <Button 
+                                variant="danger" 
+                                size="sm"
+                                className="px-3"
+                                onClick={() => handleDeleteClick(tutorial)}
+                              >
+                                <FaTrash className="me-1" /> Delete
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
+
+      {/* YouTube Auto Tab Content */}
+      {activeTab === 'youtube' && (
+        <Row>
+          <Col lg={12}>
+            <Card className="admin-form-card border-0 shadow-sm">
+              <Card.Header className="bg-danger text-white py-3">
+                <h4 className="mb-0">
+                  <FaYoutube className="me-2" /> YouTube Auto Import
+                </h4>
+              </Card.Header>
+              <Card.Body className="p-4">
+                <Alert variant="info">
+                  <FaSync className="me-2" /> 
+                  Your YouTube videos are automatically synced every hour. 
+                  New videos will appear in the tutorials list with the "Auto Upload" category.
+                </Alert>
+                <p className="text-muted mb-0">
+                  Channel: <strong>PMC Gaming</strong><br />
+                  Last sync: Check the YouTube Auto component above
+                </p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
     </Container>
   )
 }

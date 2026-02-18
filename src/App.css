@@ -1302,3 +1302,39 @@ body {
     font-size: 3rem;
   }
 }
+
+/* ===== ADMIN TABS ===== */
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.admin-tabs .btn {
+  padding: 10px 25px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border-width: 2px;
+}
+
+/* Auto Upload Badge */
+.badge.bg-info {
+  background: #17a2b8 !important;
+  color: #000000;
+}
+
+/* YouTube Icon in Table */
+.text-info {
+  color: #ff0000 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-tabs {
+    flex-direction: column;
+  }
+  
+  .admin-tabs .btn {
+    width: 100%;
+  }
+}

@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 
-// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD5I6hkbTonOvJewMPTnXyHPLinv0CNhlc",
   authDomain: "pmc-gaming-tutorials.firebaseapp.com",
@@ -13,7 +12,6 @@ const firebaseConfig = {
   measurementId: "G-S84CSXYDF9"
 }
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig)
 const database = getDatabase(app)
 
