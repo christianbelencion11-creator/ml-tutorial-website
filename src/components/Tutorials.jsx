@@ -2,66 +2,58 @@ import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Form } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { FaPlay } from 'react-icons/fa'
+import { database } from '../firebase'
+import { ref, onValue } from 'firebase/database'
 
 function Tutorials({ searchTerm }) {
   const navigate = useNavigate()
   const [tutorials, setTutorials] = useState([])
   const [category, setCategory] = useState('all')
+  const [loading, setLoading] = useState(true)
 
-  // Load tutorials from localStorage
+  // Load tutorials from Firebase
   useEffect(() => {
-    const saved = localStorage.getItem('mlbb_tutorials')
-    if (saved) {
-      setTutorials(JSON.parse(saved))
-    } else {
-      // Sample data
-      const sample = [
-        {
-          id: 1,
-          title: 'Ling Advanced Guide',
-          description: 'Master Ling with these pro combos and strategies',
-          thumbnail: 'https://via.placeholder.com/300x200/ff4500/ffffff?text=Ling+Guide',
-          youtubeUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          category: 'Hero Guide',
-          date: '2024-01-15'
-        },
-        {
-          id: 2,
-          title: 'Best Builds for Assassins',
-          description: 'Optimal item builds for every assassin hero',
-          thumbnail: 'https://via.placeholder.com/300x200/ff8c00/ffffff?text=Assassin+Builds',
-          youtubeUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          category: 'Builds',
-          date: '2024-01-10'
-        },
-        {
-          id: 3,
-          title: 'Team Fight Strategies',
-          description: 'How to win team fights every time',
-          thumbnail: 'https://via.placeholder.com/300x200/ff4500/ffffff?text=Team+Fight',
-          youtubeUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          category: 'Gameplay',
-          date: '2024-01-05'
-        }
-      ]
-      setTutorials(sample)
-      localStorage.setItem('mlbb_tutorials', JSON.stringify(sample))
-    }
+    const tutorialsRef = ref(database, 'tutorials/')
+    onValue(tutorialsRef, (snapshot) => {
+      const data = snapshot.val()
+      console.log("Firebase data:", data) // CHECK THIS IN CONSOLE
+      
+      if (data) {
+        const tutorialsArray = Object.keys(data).map(key => ({
+          id: key,
+          ...data[key]
+        }))
+        console.log("Tutorials array:", tutorialsArray) // CHECK THIS
+        setTutorials(tutorialsArray)
+      } else {
+        setTutorials([])
+      }
+      setLoading(false)
+    }, (error) => {
+      console.error("Firebase error:", error)
+      setLoading(false)
+    })
   }, [])
 
+  // Filter tutorials
   const filteredTutorials = tutorials.filter(tutorial => {
-    const matchesSearch = tutorial.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         tutorial.description.toLowerCase().includes(searchTerm.toLowerCase())
+    if (!tutorial) return false
+    const matchesSearch = (tutorial.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (tutorial.category?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     const matchesCategory = category === 'all' || tutorial.category === category
     return matchesSearch && matchesCategory
   })
 
   const categories = ['all', 'Hero Guide', 'Builds', 'Tips', 'Gameplay', 'Strategy']
 
+  if (loading) {
+    return <div className="text-center py-5">Loading tutorials...</div>
+  }
+
   return (
     <Container>
       <div className="glow-card">
-        <h2 className="text-center mb-4">MLBB Tutorials</h2>
+        <h2 className="text-center mb-4">PMC GAMING TUTORIALS</h2>
         
         {/* Filter Section */}
         <Row className="mb-4">
@@ -81,16 +73,25 @@ function Tutorials({ searchTerm }) {
         </Row>
 
         {/* Tutorials Grid */}
-        <div className="tutorial-grid">
-          {filteredTutorials.length > 0 ? (
-            filteredTutorials.map(tutorial => (
+        {filteredTutorials.length === 0 ? (
+          <div className="text-center py-5">
+            <p className="text-muted">No tutorials found. Add your first tutorial in Admin panel!</p>
+          </div>
+        ) : (
+          <div className="tutorial-grid">
+            {filteredTutorials.map(tutorial => (
               <div 
                 key={tutorial.id} 
                 className="tutorial-card"
                 onClick={() => navigate(`/tutorial/${tutorial.id}`)}
               >
                 <div className="thumbnail-container">
-                  <img src={tutorial.thumbnail} alt={tutorial.title} className="thumbnail" />
+                  <img 
+                    src={tutorial.thumbnail} 
+                    alt={tutorial.title}
+                    className="thumbnail"
+                    onError={(e) => e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'}
+                  />
                   <div className="play-overlay">
                     <FaPlay className="play-icon" />
                   </div>
@@ -105,11 +106,9 @@ function Tutorials({ searchTerm }) {
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <p className="text-center">No tutorials found</p>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </Container>
   )
