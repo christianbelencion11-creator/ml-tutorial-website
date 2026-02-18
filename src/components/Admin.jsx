@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Container, Row, Col, Form, Button, Table } from 'react-bootstrap'
-import { FaEdit, FaTrash } from 'react-icons/fa'
+import { Container, Row, Col, Form, Button, Table, Alert } from 'react-bootstrap'
+import { FaEdit, FaTrash, FaLock } from 'react-icons/fa'
 
 function Admin() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const [tutorials, setTutorials] = useState([])
   const [editingId, setEditingId] = useState(null)
   const [formData, setFormData] = useState({
@@ -14,6 +17,9 @@ function Admin() {
     date: new Date().toISOString().split('T')[0]
   })
 
+  // Admin password (palitan mo ito ng gusto mong password)
+  const ADMIN_PASSWORD = 'mlbb123'
+
   useEffect(() => {
     const saved = localStorage.getItem('mlbb_tutorials')
     if (saved) {
@@ -21,63 +27,68 @@ function Admin() {
     }
   }, [])
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
-
-  const handleSubmit = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault()
-    
-    let updatedTutorials
-    if (editingId) {
-      // Update existing
-      updatedTutorials = tutorials.map(t => 
-        t.id === editingId ? { ...formData, id: editingId } : t
-      )
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true)
+      setError('')
     } else {
-      // Add new
-      const newTutorial = {
-        ...formData,
-        id: Date.now()
-      }
-      updatedTutorials = [...tutorials, newTutorial]
-    }
-    
-    setTutorials(updatedTutorials)
-    localStorage.setItem('mlbb_tutorials', JSON.stringify(updatedTutorials))
-    
-    // Reset form
-    setFormData({
-      title: '',
-      description: '',
-      thumbnail: '',
-      youtubeUrl: '',
-      category: 'Hero Guide',
-      date: new Date().toISOString().split('T')[0]
-    })
-    setEditingId(null)
-  }
-
-  const handleEdit = (tutorial) => {
-    setFormData(tutorial)
-    setEditingId(tutorial.id)
-  }
-
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this tutorial?')) {
-      const updated = tutorials.filter(t => t.id !== id)
-      setTutorials(updated)
-      localStorage.setItem('mlbb_tutorials', JSON.stringify(updated))
+      setError('❌ Wrong password!')
     }
   }
 
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    setPassword('')
+  }
+
+  // Kung hindi pa naka-login, ipakita ang login form
+  if (!isAuthenticated) {
+    return (
+      <Container>
+        <div className="admin-panel" style={{ maxWidth: '400px', margin: '50px auto' }}>
+          <div className="text-center mb-4">
+            <FaLock size={50} className="text-danger mb-3" />
+            <h2>Admin Login</h2>
+            <p className="text-muted">Enter password to access admin panel</p>
+          </div>
+
+          {error && <Alert variant="danger">{error}</Alert>}
+
+          <Form onSubmit={handleLogin}>
+            <Form.Group className="form-group">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter admin password"
+                required
+              />
+            </Form.Group>
+            <Button type="submit" variant="primary" className="w-100">
+              Login
+            </Button>
+          </Form>
+
+          <div className="text-center mt-3">
+            <small className="text-muted">Default password: mlbb123</small>
+          </div>
+        </div>
+      </Container>
+    )
+  }
+
+  // Pag naka-login na, ipakita ang admin panel
   return (
     <Container>
       <div className="admin-panel">
-        <h2 className="text-center mb-4">Admin Panel</h2>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2>Admin Panel</h2>
+          <Button variant="outline-danger" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
         
         {/* Add/Edit Form */}
         <div className="glow-card mb-5">
