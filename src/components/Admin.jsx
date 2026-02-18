@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { Container, Row, Col, Form, Button, Table, Alert, Modal, Card, Badge } from 'react-bootstrap'
-import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaLink, FaImage } from 'react-icons/fa'
+import { Container, Row, Col, Form, Button, Table, Alert, Modal, Card } from 'react-bootstrap'
+import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaImage, FaUpload } from 'react-icons/fa'
 import { database } from '../firebase'
 import { ref, push, set, remove, onValue } from 'firebase/database'
 
 function Admin() {
   // ============================================
-  // ADMIN CONFIGURATION - EASY TO CUSTOMIZE
+  // ADMIN CONFIGURATION
   // ============================================
   
   // 🔐 ADMIN PASSWORD - CHANGE THIS TO YOUR OWN PASSWORD
-  // Example: "admin123", "christian2024", "PMCgaming!23"
-  const ADMIN_PASSWORD = 'mlbb123'
-  
-  // 🎨 ADMIN PANEL SETTINGS
-  const APP_NAME = 'PMC GAMING TUTORIALS'  // Change this to your app name
-  const ITEMS_PER_PAGE = 10                // Number of tutorials per page
+  const ADMIN_PASSWORD = 'mlbb123'  // Palitan mo ito ng gusto mong password
   
   // ============================================
   
@@ -29,8 +24,8 @@ function Admin() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [tutorialToDelete, setTutorialToDelete] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [formErrors, setFormErrors] = useState({})
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [imagePreview, setImagePreview] = useState('')
   
   const [formData, setFormData] = useState({
     title: '',
@@ -38,10 +33,7 @@ function Admin() {
     thumbnail: '',
     youtubeUrl: '',
     category: 'Hero Guide',
-    date: new Date().toISOString().split('T')[0],
-    views: 0,
-    duration: '',
-    difficulty: 'Intermediate'
+    date: new Date().toISOString().split('T')[0]
   })
 
   // Load tutorials from Firebase
@@ -61,16 +53,24 @@ function Admin() {
     })
   }, [])
 
-  const validateForm = () => {
-    const errors = {}
-    if (!formData.title.trim()) errors.title = 'Title is required'
-    if (!formData.description.trim()) errors.description = 'Description is required'
-    if (!formData.thumbnail.trim()) errors.thumbnail = 'Thumbnail URL is required'
-    if (!formData.youtubeUrl.trim()) errors.youtubeUrl = 'YouTube URL is required'
-    if (!formData.youtubeUrl.includes('youtube.com/embed/') && !formData.youtubeUrl.includes('youtu.be')) {
-      errors.youtubeUrl = 'Please use a valid YouTube embed URL'
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setSelectedImage(file)
+      
+      // Create preview URL
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result)
+        // In a real app, you'd upload to a server here
+        // For now, we'll use the preview as the thumbnail
+        setFormData(prev => ({
+          ...prev,
+          thumbnail: reader.result
+        }))
+      }
+      reader.readAsDataURL(file)
     }
-    return errors
   }
 
   const handleLogin = (e) => {
@@ -79,7 +79,7 @@ function Admin() {
       setIsAuthenticated(true)
       setError('')
     } else {
-      setError('❌ Incorrect password! Please try again.')
+      setError('❌ Incorrect password!')
     }
   }
 
@@ -94,40 +94,24 @@ function Admin() {
       ...prev,
       [name]: value
     }))
-    // Clear error for this field when user starts typing
-    if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: null }))
-    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Validate form
-    const errors = validateForm()
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors)
-      setShowSuccess('❌ Please fix the errors in the form')
+    if (!formData.title || !formData.description || !formData.thumbnail || !formData.youtubeUrl) {
+      setShowSuccess('❌ Please fill in all fields!')
       setTimeout(() => setShowSuccess(''), 3000)
       return
     }
     
     try {
       if (editingId) {
-        // Update existing tutorial
-        await set(ref(database, `tutorials/${editingId}`), {
-          ...formData,
-          lastUpdated: new Date().toISOString()
-        })
+        await set(ref(database, `tutorials/${editingId}`), formData)
         setShowSuccess('✅ Tutorial updated successfully!')
       } else {
-        // Add new tutorial
         const tutorialsRef = ref(database, 'tutorials/')
-        await push(tutorialsRef, {
-          ...formData,
-          createdAt: new Date().toISOString(),
-          views: 0
-        })
+        await push(tutorialsRef, formData)
         setShowSuccess('✅ New tutorial added successfully!')
       }
       
@@ -138,22 +122,21 @@ function Admin() {
         thumbnail: '',
         youtubeUrl: '',
         category: 'Hero Guide',
-        date: new Date().toISOString().split('T')[0],
-        views: 0,
-        duration: '',
-        difficulty: 'Intermediate'
+        date: new Date().toISOString().split('T')[0]
       })
+      setSelectedImage(null)
+      setImagePreview('')
       setEditingId(null)
-      setFormErrors({})
 
       setTimeout(() => setShowSuccess(''), 3000)
     } catch (error) {
-      setShowSuccess('❌ Error saving tutorial! Please try again.')
+      setShowSuccess('❌ Error saving tutorial!')
     }
   }
 
   const handleEdit = (tutorial) => {
     setFormData(tutorial)
+    setImagePreview(tutorial.thumbnail)
     setEditingId(tutorial.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -177,22 +160,11 @@ function Admin() {
     }
   }
 
-  // Filter and pagination
+  // Filter tutorials
   const filteredTutorials = tutorials.filter(tutorial => 
     tutorial.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tutorial.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tutorial.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    tutorial.category?.toLowerCase().includes(searchTerm.toLowerCase())
   )
-
-  const pageCount = Math.ceil(filteredTutorials.length / ITEMS_PER_PAGE)
-  const currentTutorials = filteredTutorials.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
-
-  // Category options
-  const categories = ['Hero Guide', 'Builds', 'Tips', 'Gameplay', 'Strategy', 'Tutorial', 'Review']
-  const difficultyLevels = ['Beginner', 'Intermediate', 'Advanced', 'Expert']
 
   // Login form
   if (!isAuthenticated) {
@@ -206,8 +178,8 @@ function Admin() {
                   <div className="login-icon-wrapper mb-3">
                     <FaLock size={40} className="text-danger" />
                   </div>
-                  <h2 className="fw-bold mb-1">{APP_NAME}</h2>
-                  <p className="text-muted">Admin Panel Login</p>
+                  <h2 className="fw-bold mb-1">PMC GAMING</h2>
+                  <p className="text-muted">Admin Login</p>
                 </div>
 
                 {error && (
@@ -237,13 +209,10 @@ function Admin() {
                         {showPassword ? <FaEyeSlash /> : <FaEye />}
                       </Button>
                     </div>
-                    <Form.Text className="text-muted">
-                      Default password: <code>mlbb123</code> (change in Admin.jsx)
-                    </Form.Text>
                   </Form.Group>
 
                   <Button type="submit" variant="danger" className="w-100 py-2 fw-bold" size="lg">
-                    <FaLock className="me-2" /> Login to Admin Panel
+                    <FaLock className="me-2" /> Login
                   </Button>
                 </Form>
               </Card.Body>
@@ -271,7 +240,7 @@ function Admin() {
             Cancel
           </Button>
           <Button variant="danger" onClick={handleDeleteConfirm}>
-            <FaTrash className="me-2" /> Delete Tutorial
+            <FaTrash className="me-2" /> Delete
           </Button>
         </Modal.Footer>
       </Modal>
@@ -281,9 +250,9 @@ function Admin() {
         <Row className="align-items-center">
           <Col>
             <h2 className="mb-0">
-              <span className="text-danger">⚡</span> {APP_NAME} Admin
+              <span className="text-danger">⚡</span> PMC GAMING Admin
             </h2>
-            <p className="text-muted mb-0">Manage your tutorials and content</p>
+            <p className="text-muted mb-0">Manage your tutorials</p>
           </Col>
           <Col className="text-end">
             <Button variant="outline-danger" onClick={handleLogout} className="px-4">
@@ -315,27 +284,20 @@ function Admin() {
             </Card.Header>
             <Card.Body className="p-4">
               <Form onSubmit={handleSubmit}>
-                <Row>
-                  <Col md={12}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-bold">
-                        <FaVideo className="me-2 text-danger" /> Title
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleChange}
-                        placeholder="e.g., Ling Advanced Guide"
-                        isInvalid={!!formErrors.title}
-                        className="py-2"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {formErrors.title}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                </Row>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">
+                    <FaVideo className="me-2 text-danger" /> Title
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="e.g., Ling Advanced Guide"
+                    required
+                    className="py-2"
+                  />
+                </Form.Group>
 
                 <Row>
                   <Col md={6}>
@@ -349,88 +311,14 @@ function Admin() {
                         onChange={handleChange}
                         className="py-2"
                       >
-                        {categories.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
-                        ))}
+                        <option value="Hero Guide">Hero Guide</option>
+                        <option value="Builds">Builds</option>
+                        <option value="Tips">Tips</option>
+                        <option value="Gameplay">Gameplay</option>
+                        <option value="Strategy">Strategy</option>
                       </Form.Select>
                     </Form.Group>
                   </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-bold">Difficulty</Form.Label>
-                      <Form.Select
-                        name="difficulty"
-                        value={formData.difficulty}
-                        onChange={handleChange}
-                        className="py-2"
-                      >
-                        {difficultyLevels.map(level => (
-                          <option key={level} value={level}>{level}</option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Describe what this tutorial covers..."
-                    rows={3}
-                    isInvalid={!!formErrors.description}
-                    className="py-2"
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {formErrors.description}
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-bold">
-                        <FaImage className="me-2 text-danger" /> Thumbnail URL
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="thumbnail"
-                        value={formData.thumbnail}
-                        onChange={handleChange}
-                        placeholder="https://example.com/image.jpg"
-                        isInvalid={!!formErrors.thumbnail}
-                        className="py-2"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {formErrors.thumbnail}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-bold">
-                        <FaLink className="me-2 text-danger" /> YouTube URL
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="youtubeUrl"
-                        value={formData.youtubeUrl}
-                        onChange={handleChange}
-                        placeholder="https://youtube.com/embed/..."
-                        isInvalid={!!formErrors.youtubeUrl}
-                        className="py-2"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {formErrors.youtubeUrl}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label className="fw-bold">
@@ -445,24 +333,84 @@ function Admin() {
                       />
                     </Form.Group>
                   </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-bold">Duration (minutes)</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="duration"
-                        value={formData.duration}
-                        onChange={handleChange}
-                        placeholder="e.g., 15 mins"
-                        className="py-2"
-                      />
-                    </Form.Group>
-                  </Col>
                 </Row>
+
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">Description</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Describe what this tutorial covers..."
+                    rows={3}
+                    required
+                    className="py-2"
+                  />
+                </Form.Group>
+
+                {/* Image Upload Section */}
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">
+                    <FaImage className="me-2 text-danger" /> Thumbnail Image
+                  </Form.Label>
+                  <div className="image-upload-container">
+                    {imagePreview ? (
+                      <div className="image-preview-wrapper mb-3">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="image-preview"
+                        />
+                        <Button 
+                          variant="outline-danger" 
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => {
+                            setImagePreview('')
+                            setSelectedImage(null)
+                            setFormData(prev => ({ ...prev, thumbnail: '' }))
+                          }}
+                        >
+                          <FaTimes /> Remove Image
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="upload-area" onClick={() => document.getElementById('imageUpload').click()}>
+                        <FaUpload size={30} className="text-danger mb-2" />
+                        <p className="mb-1">Click to upload thumbnail</p>
+                        <small className="text-muted">PNG, JPG, GIF up to 5MB</small>
+                      </div>
+                    )}
+                    <Form.Control
+                      type="file"
+                      id="imageUpload"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </div>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">YouTube Embed URL</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="youtubeUrl"
+                    value={formData.youtubeUrl}
+                    onChange={handleChange}
+                    placeholder="https://www.youtube.com/embed/VIDEO_ID"
+                    required
+                    className="py-2"
+                  />
+                  <Form.Text className="text-muted">
+                    Format: https://www.youtube.com/embed/VIDEO_ID
+                  </Form.Text>
+                </Form.Group>
 
                 <div className="d-flex gap-2 mt-4">
                   <Button type="submit" variant="danger" className="flex-grow-1 py-2 fw-bold">
-                    {editingId ? <><FaSave className="me-2" /> Update Tutorial</> : <><FaPlus className="me-2" /> Add Tutorial</>}
+                    {editingId ? <><FaSave className="me-2" /> Update</> : <><FaPlus className="me-2" /> Add Tutorial</>}
                   </Button>
                   {editingId && (
                     <Button 
@@ -476,12 +424,10 @@ function Admin() {
                           thumbnail: '',
                           youtubeUrl: '',
                           category: 'Hero Guide',
-                          date: new Date().toISOString().split('T')[0],
-                          views: 0,
-                          duration: '',
-                          difficulty: 'Intermediate'
+                          date: new Date().toISOString().split('T')[0]
                         })
-                        setFormErrors({})
+                        setImagePreview('')
+                        setSelectedImage(null)
                       }}
                     >
                       <FaTimes /> Cancel
@@ -499,7 +445,7 @@ function Admin() {
             <Card.Header className="bg-dark text-white py-3">
               <Row className="align-items-center">
                 <Col>
-                  <h4 className="mb-0">📚 Tutorials Manager</h4>
+                  <h4 className="mb-0">📚 Tutorials List</h4>
                 </Col>
                 <Col md={5}>
                   <Form.Control
@@ -515,100 +461,60 @@ function Admin() {
             <Card.Body className="p-0">
               {filteredTutorials.length === 0 ? (
                 <div className="text-center py-5">
-                  <p className="text-muted mb-0">No tutorials found. Add your first tutorial!</p>
+                  <p className="text-muted mb-0">No tutorials yet. Add your first tutorial!</p>
                 </div>
               ) : (
-                <>
-                  <div className="table-responsive">
-                    <Table hover className="admin-table mb-0">
-                      <thead className="bg-light">
-                        <tr>
-                          <th>Title</th>
-                          <th>Category</th>
-                          <th>Date</th>
-                          <th>Difficulty</th>
-                          <th className="text-center">Actions</th>
+                <div className="table-responsive">
+                  <Table hover className="admin-table mb-0">
+                    <thead className="bg-light">
+                      <tr>
+                        <th>Thumbnail</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th className="text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTutorials.map(tutorial => (
+                        <tr key={tutorial.id}>
+                          <td>
+                            <img 
+                              src={tutorial.thumbnail} 
+                              alt={tutorial.title}
+                              style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
+                              onError={(e) => e.target.src = 'https://via.placeholder.com/50'}
+                            />
+                          </td>
+                          <td className="fw-bold">{tutorial.title}</td>
+                          <td>
+                            <span className="badge bg-danger px-3 py-2">
+                              {tutorial.category}
+                            </span>
+                          </td>
+                          <td>{new Date(tutorial.date).toLocaleDateString()}</td>
+                          <td className="text-center">
+                            <Button 
+                              variant="warning" 
+                              size="sm" 
+                              className="me-2"
+                              onClick={() => handleEdit(tutorial)}
+                            >
+                              <FaEdit /> Edit
+                            </Button>
+                            <Button 
+                              variant="danger" 
+                              size="sm"
+                              onClick={() => handleDeleteClick(tutorial)}
+                            >
+                              <FaTrash /> Delete
+                            </Button>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {currentTutorials.map(tutorial => (
-                          <tr key={tutorial.id}>
-                            <td>
-                              <div className="d-flex align-items-center">
-                                <img 
-                                  src={tutorial.thumbnail} 
-                                  alt={tutorial.title}
-                                  style={{ width: '40px', height: '40px', objectFit: 'cover', marginRight: '10px', borderRadius: '4px' }}
-                                  onError={(e) => e.target.src = 'https://via.placeholder.com/40'}
-                                />
-                                <div>
-                                  <strong>{tutorial.title}</strong>
-                                  <br />
-                                  <small className="text-muted">{tutorial.views || 0} views</small>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <Badge bg="danger" className="px-3 py-2">
-                                {tutorial.category}
-                              </Badge>
-                            </td>
-                            <td>{new Date(tutorial.date).toLocaleDateString()}</td>
-                            <td>
-                              <Badge bg={tutorial.difficulty === 'Expert' ? 'dark' : 'secondary'}>
-                                {tutorial.difficulty || 'Intermediate'}
-                              </Badge>
-                            </td>
-                            <td className="text-center">
-                              <Button 
-                                variant="warning" 
-                                size="sm" 
-                                className="me-2 px-3"
-                                onClick={() => handleEdit(tutorial)}
-                              >
-                                <FaEdit className="me-1" /> Edit
-                              </Button>
-                              <Button 
-                                variant="danger" 
-                                size="sm"
-                                className="px-3"
-                                onClick={() => handleDeleteClick(tutorial)}
-                              >
-                                <FaTrash className="me-1" /> Delete
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </div>
-
-                  {/* Pagination */}
-                  {pageCount > 1 && (
-                    <div className="d-flex justify-content-center align-items-center p-3 border-top">
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className="me-2"
-                      >
-                        Previous
-                      </Button>
-                      <span className="mx-3">
-                        Page {currentPage} of {pageCount}
-                      </span>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(pageCount, prev + 1))}
-                        disabled={currentPage === pageCount}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  )}
-                </>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
               )}
             </Card.Body>
           </Card>
