@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import { Container, Navbar, Nav } from 'react-bootstrap'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { useState } from 'react'
+import { FaGamepad, FaSkull, FaFire, FaCrown } from 'react-icons/fa'
 import Home from './components/Home'
 import Tutorials from './components/Tutorials'
 import About from './components/About'
@@ -16,29 +17,47 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Navbar bg="dark" variant="dark" expand="lg" fixed="top" className="navbar-custom">
+        {/* UPDATED NAVIGATION - PMC GAMING THEME */}
+        <Navbar className="pmc-navbar" expand="lg" fixed="top" variant="dark">
           <Container>
-            <Navbar.Brand as={Link} to="/" className="brand-text">
-              <span className="ml-logo">🎮</span> MLBB Academy
+            <Navbar.Brand as={Link} to="/" className="pmc-brand">
+              <FaSkull className="brand-icon" />
+              <span className="brand-text">PMC GAMING</span>
+              <span className="brand-tag">TUTORIALS</span>
             </Navbar.Brand>
-            <Navbar.Toggle />
-            <Navbar.Collapse>
-              <Nav className="mx-auto">
-                <Nav.Link as={Link} to="/">Home</Nav.Link>
-                <Nav.Link as={Link} to="/tutorials">Tutorials</Nav.Link>
-                <Nav.Link as={Link} to="/about">About</Nav.Link>
-                <Nav.Link as={Link} to="/contact">Contact</Nav.Link>
-                <Nav.Link as={Link} to="/admin" className="admin-link">Admin</Nav.Link>
+            
+            <Navbar.Toggle aria-controls="pmc-nav" />
+            <Navbar.Collapse id="pmc-nav">
+              <Nav className="mx-auto pmc-nav-links">
+                <Nav.Link as={Link} to="/" className="nav-item">
+                  <FaFire className="nav-icon" /> HOME
+                </Nav.Link>
+                <Nav.Link as={Link} to="/tutorials" className="nav-item">
+                  <FaGamepad className="nav-icon" /> TUTORIALS
+                </Nav.Link>
+                <Nav.Link as={Link} to="/about" className="nav-item">
+                  <FaCrown className="nav-icon" /> ABOUT
+                </Nav.Link>
+                <Nav.Link as={Link} to="/contact" className="nav-item">
+                  <FaSkull className="nav-icon" /> CONTACT
+                </Nav.Link>
               </Nav>
-              <div className="search-box">
+              
+              {/* Search Box */}
+              <div className="pmc-search">
                 <input 
                   type="text" 
-                  placeholder="Search tutorials..."
+                  placeholder="SEARCH TUTORIALS..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
+                  className="pmc-search-input"
                 />
               </div>
+
+              {/* Admin Button - NAKAHIWALAY SA RIGHT */}
+              <Nav.Link as={Link} to="/admin" className="pmc-admin-btn">
+                <FaSkull /> ADMIN
+              </Nav.Link>
             </Navbar.Collapse>
           </Container>
         </Navbar>
@@ -54,9 +73,10 @@ function App() {
           </Routes>
         </Container>
 
-        <footer className="footer">
+        <footer className="pmc-footer">
           <Container>
-            <p>© 2024 MLBB Academy. All rights reserved.</p>
+            <p>⚔️ 2025 PMC GAMING TUTORIALS ⚔️</p>
+            <p className="footer-tag">LEVEL UP YOUR GAME</p>
           </Container>
         </footer>
       </div>

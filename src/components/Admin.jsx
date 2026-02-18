@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Form, Button, Table, Alert } from 'react-bootstrap'
 import { FaEdit, FaTrash, FaLock } from 'react-icons/fa'
+import { database } from '../firebase'
+import { ref, push, set, remove, onValue } from 'firebase/database'
 
 function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -8,7 +10,7 @@ function Admin() {
   const [error, setError] = useState('')
   const [tutorials, setTutorials] = useState([])
   const [editingId, setEditingId] = useState(null)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [showSuccess, setShowSuccess] = useState('')
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -18,39 +20,24 @@ function Admin() {
     date: new Date().toISOString().split('T')[0]
   })
 
-  // Admin password
   const ADMIN_PASSWORD = 'mlbb123'
 
-  // Load tutorials from localStorage
+  // Load tutorials from Firebase
   useEffect(() => {
-    const saved = localStorage.getItem('mlbb_tutorials')
-    if (saved) {
-      setTutorials(JSON.parse(saved))
-    } else {
-      // Sample data kung walang laman
-      const sample = [
-        {
-          id: 1,
-          title: 'Ling Advanced Guide',
-          description: 'Master Ling with these pro combos and strategies',
-          thumbnail: 'https://via.placeholder.com/300x200/ff4500/ffffff?text=Ling+Guide',
-          youtubeUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          category: 'Hero Guide',
-          date: '2024-01-15'
-        },
-        {
-          id: 2,
-          title: 'Best Builds for Assassins',
-          description: 'Optimal item builds for every assassin hero',
-          thumbnail: 'https://via.placeholder.com/300x200/ff8c00/ffffff?text=Assassin+Builds',
-          youtubeUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          category: 'Builds',
-          date: '2024-01-10'
-        }
-      ]
-      setTutorials(sample)
-      localStorage.setItem('mlbb_tutorials', JSON.stringify(sample))
-    }
+    const tutorialsRef = ref(database, 'tutorials/')
+    onValue(tutorialsRef, (snapshot) => {
+      const data = snapshot.val()
+      if (data) {
+        // Convert Firebase object to array
+        const tutorialsArray = Object.keys(data).map(key => ({
+          id: key,
+          ...data[key]
+        }))
+        setTutorials(tutorialsArray)
+      } else {
+        setTutorials([])
+      }
+    })
   }, [])
 
   const handleLogin = (e) => {
@@ -75,42 +62,36 @@ function Admin() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
-    let updatedTutorials
-    if (editingId) {
-      // Update existing tutorial
-      updatedTutorials = tutorials.map(t => 
-        t.id === editingId ? { ...formData, id: editingId } : t
-      )
-      setShowSuccess('✅ Tutorial updated successfully!')
-    } else {
-      // Add new tutorial
-      const newTutorial = {
-        ...formData,
-        id: Date.now()
+    try {
+      if (editingId) {
+        // Update existing tutorial
+        await set(ref(database, `tutorials/${editingId}`), formData)
+        setShowSuccess('✅ Tutorial updated successfully!')
+      } else {
+        // Add new tutorial
+        const tutorialsRef = ref(database, 'tutorials/')
+        await push(tutorialsRef, formData)
+        setShowSuccess('✅ New tutorial added successfully!')
       }
-      updatedTutorials = [...tutorials, newTutorial]
-      setShowSuccess('✅ New tutorial added successfully!')
-    }
-    
-    setTutorials(updatedTutorials)
-    localStorage.setItem('mlbb_tutorials', JSON.stringify(updatedTutorials))
-    
-    // Reset form
-    setFormData({
-      title: '',
-      description: '',
-      thumbnail: '',
-      youtubeUrl: '',
-      category: 'Hero Guide',
-      date: new Date().toISOString().split('T')[0]
-    })
-    setEditingId(null)
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        thumbnail: '',
+        youtubeUrl: '',
+        category: 'Hero Guide',
+        date: new Date().toISOString().split('T')[0]
+      })
+      setEditingId(null)
 
-    // Hide success message after 3 seconds
-    setTimeout(() => setShowSuccess(false), 3000)
+      setTimeout(() => setShowSuccess(''), 3000)
+    } catch (error) {
+      setShowSuccess('❌ Error saving tutorial!')
+    }
   }
 
   const handleEdit = (tutorial) => {
@@ -119,17 +100,19 @@ function Admin() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this tutorial?')) {
-      const updated = tutorials.filter(t => t.id !== id)
-      setTutorials(updated)
-      localStorage.setItem('mlbb_tutorials', JSON.stringify(updated))
-      setShowSuccess('✅ Tutorial deleted successfully!')
-      setTimeout(() => setShowSuccess(false), 3000)
+      try {
+        await remove(ref(database, `tutorials/${id}`))
+        setShowSuccess('✅ Tutorial deleted successfully!')
+        setTimeout(() => setShowSuccess(''), 3000)
+      } catch (error) {
+        setShowSuccess('❌ Error deleting tutorial!')
+      }
     }
   }
 
-  // Kung hindi pa naka-login, ipakita ang login form
+  // Login form
   if (!isAuthenticated) {
     return (
       <Container>
@@ -166,19 +149,19 @@ function Admin() {
     )
   }
 
-  // Pag naka-login na, ipakita ang admin panel
+  // Admin Panel
   return (
     <Container>
       <div className="admin-panel">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2>Admin Panel</h2>
+          <h2>Admin Panel - Firebase</h2>
           <Button variant="outline-danger" onClick={handleLogout}>
             Logout
           </Button>
         </div>
         
         {showSuccess && (
-          <Alert variant="success" className="text-center">
+          <Alert variant={showSuccess.includes('✅') ? 'success' : 'danger'} className="text-center">
             {showSuccess}
           </Alert>
         )}
@@ -244,9 +227,6 @@ function Admin() {
                     placeholder="https://example.com/image.jpg"
                     required
                   />
-                  <Form.Text className="text-muted">
-                    Use images from Google or placeholder images
-                  </Form.Text>
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -260,9 +240,6 @@ function Admin() {
                     placeholder="https://www.youtube.com/embed/VIDEO_ID"
                     required
                   />
-                  <Form.Text className="text-muted">
-                    Use the embed URL format
-                  </Form.Text>
                 </Form.Group>
               </Col>
             </Row>
@@ -306,7 +283,7 @@ function Admin() {
         </div>
 
         {/* Tutorials List */}
-        <h3 className="mb-4">📚 Manage Tutorials</h3>
+        <h3 className="mb-4">📚 Manage Tutorials (Firebase)</h3>
         {tutorials.length === 0 ? (
           <Alert variant="info">No tutorials yet. Add your first tutorial!</Alert>
         ) : (
