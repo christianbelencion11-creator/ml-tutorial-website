@@ -719,3 +719,76 @@ body {
 }
 
 }
+
+
+/* ===== PASSWORD HIDE/UNHIDE STYLES ===== */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input {
+  padding-right: 50px !important;
+  background: #1a1a1a;
+  border: 2px solid #333;
+  color: #ffffff;
+  height: 50px;
+  font-size: 1rem;
+}
+
+.password-input:focus {
+  border-color: #ff0000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+  background: #222;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #ff0000;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+.password-toggle:hover {
+  color: #ff6600;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.password-toggle:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Hide the default password hint */
+.password-hint {
+  display: none;
+}
+
+/* Login Icon */
+.login-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 0, 0, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  border: 2px solid #ff0000;
+  transition: all 0.3s;
+}
+
+.login-icon-wrapper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Form, Button, Table, Alert, Modal, Card } from 'react-bootstrap'
-import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaImage, FaUpload } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaLink, FaImage } from 'react-icons/fa'
 import { database } from '../firebase'
 import { ref, push, set, remove, onValue } from 'firebase/database'
 
@@ -16,7 +16,7 @@ function Admin() {
   
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)  // For hide/unhide
   const [error, setError] = useState('')
   const [tutorials, setTutorials] = useState([])
   const [editingId, setEditingId] = useState(null)
@@ -24,8 +24,6 @@ function Admin() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [tutorialToDelete, setTutorialToDelete] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [imagePreview, setImagePreview] = useState('')
   
   const [formData, setFormData] = useState({
     title: '',
@@ -53,31 +51,12 @@ function Admin() {
     })
   }, [])
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setSelectedImage(file)
-      
-      // Create preview URL
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result)
-        // In a real app, you'd upload to a server here
-        // For now, we'll use the preview as the thumbnail
-        setFormData(prev => ({
-          ...prev,
-          thumbnail: reader.result
-        }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
   const handleLogin = (e) => {
     e.preventDefault()
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true)
       setError('')
+      setPassword('') // Clear password after login
     } else {
       setError('❌ Incorrect password!')
     }
@@ -86,6 +65,7 @@ function Admin() {
   const handleLogout = () => {
     setIsAuthenticated(false)
     setPassword('')
+    setShowPassword(false)
   }
 
   const handleChange = (e) => {
@@ -124,8 +104,6 @@ function Admin() {
         category: 'Hero Guide',
         date: new Date().toISOString().split('T')[0]
       })
-      setSelectedImage(null)
-      setImagePreview('')
       setEditingId(null)
 
       setTimeout(() => setShowSuccess(''), 3000)
@@ -136,7 +114,6 @@ function Admin() {
 
   const handleEdit = (tutorial) => {
     setFormData(tutorial)
-    setImagePreview(tutorial.thumbnail)
     setEditingId(tutorial.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -205,10 +182,14 @@ function Admin() {
                         variant="link"
                         className="password-toggle"
                         onClick={() => setShowPassword(!showPassword)}
+                        type="button"
                       >
-                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
                       </Button>
                     </div>
+                    <Form.Text className="text-muted password-hint">
+                      {/* No default password shown here */}
+                    </Form.Text>
                   </Form.Group>
 
                   <Button type="submit" variant="danger" className="w-100 py-2 fw-bold" size="lg">
@@ -349,51 +330,28 @@ function Admin() {
                   />
                 </Form.Group>
 
-                {/* Image Upload Section */}
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-bold">
-                    <FaImage className="me-2 text-danger" /> Thumbnail Image
+                    <FaImage className="me-2 text-danger" /> Thumbnail URL
                   </Form.Label>
-                  <div className="image-upload-container">
-                    {imagePreview ? (
-                      <div className="image-preview-wrapper mb-3">
-                        <img 
-                          src={imagePreview} 
-                          alt="Preview" 
-                          className="image-preview"
-                        />
-                        <Button 
-                          variant="outline-danger" 
-                          size="sm"
-                          className="mt-2"
-                          onClick={() => {
-                            setImagePreview('')
-                            setSelectedImage(null)
-                            setFormData(prev => ({ ...prev, thumbnail: '' }))
-                          }}
-                        >
-                          <FaTimes /> Remove Image
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="upload-area" onClick={() => document.getElementById('imageUpload').click()}>
-                        <FaUpload size={30} className="text-danger mb-2" />
-                        <p className="mb-1">Click to upload thumbnail</p>
-                        <small className="text-muted">PNG, JPG, GIF up to 5MB</small>
-                      </div>
-                    )}
-                    <Form.Control
-                      type="file"
-                      id="imageUpload"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      style={{ display: 'none' }}
-                    />
-                  </div>
+                  <Form.Control
+                    type="text"
+                    name="thumbnail"
+                    value={formData.thumbnail}
+                    onChange={handleChange}
+                    placeholder="https://i.imgur.com/example.jpg"
+                    required
+                    className="py-2"
+                  />
+                  <Form.Text className="text-muted">
+                    Use Imgur, Cloudinary, or any image hosting service
+                  </Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">YouTube Embed URL</Form.Label>
+                  <Form.Label className="fw-bold">
+                    <FaLink className="me-2 text-danger" /> YouTube Embed URL
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     name="youtubeUrl"
@@ -426,8 +384,6 @@ function Admin() {
                           category: 'Hero Guide',
                           date: new Date().toISOString().split('T')[0]
                         })
-                        setImagePreview('')
-                        setSelectedImage(null)
                       }}
                     >
                       <FaTimes /> Cancel
@@ -483,7 +439,7 @@ function Admin() {
                               src={tutorial.thumbnail} 
                               alt={tutorial.title}
                               style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
-                              onError={(e) => e.target.src = 'https://via.placeholder.com/50'}
+                              onError={(e) => e.target.src = 'https://via.placeholder.com/50?text=No+Image'}
                             />
                           </td>
                           <td className="fw-bold">{tutorial.title}</td>
@@ -497,17 +453,18 @@ function Admin() {
                             <Button 
                               variant="warning" 
                               size="sm" 
-                              className="me-2"
+                              className="me-2 px-3"
                               onClick={() => handleEdit(tutorial)}
                             >
-                              <FaEdit /> Edit
+                              <FaEdit className="me-1" /> Edit
                             </Button>
                             <Button 
                               variant="danger" 
                               size="sm"
+                              className="px-3"
                               onClick={() => handleDeleteClick(tutorial)}
                             >
-                              <FaTrash /> Delete
+                              <FaTrash className="me-1" /> Delete
                             </Button>
                           </td>
                         </tr>
