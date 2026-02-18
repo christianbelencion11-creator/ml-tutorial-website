@@ -3,7 +3,7 @@ import { Container, Row, Col, Form, Button, Table, Alert, Modal, Card } from 're
 import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaLink, FaImage, FaYoutube, FaSync } from 'react-icons/fa'
 import { database } from '../firebase'
 import { ref, push, set, remove, onValue } from 'firebase/database'
-import YouTubeAuto from './YouTubeAuto'
+import YouTubeAuto from './YouTubeAuto'  // Tama dapat ito
 
 function Admin() {
   // ============================================
