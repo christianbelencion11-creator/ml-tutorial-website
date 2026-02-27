@@ -9,7 +9,7 @@ function Admin() {
   // ============================================
   // ADMIN CONFIGURATION
   // ============================================
-  const ADMIN_PASSWORD = 'mlbb123'
+  const ADMIN_PASSWORD = '09195911297'
   // ============================================
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
