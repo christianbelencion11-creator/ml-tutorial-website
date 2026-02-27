@@ -801,11 +801,111 @@ body {
   box-shadow: 0 0 30px #ff0000;
 }
 
+/* ===== YOUTUBE CHANNEL BANNER ===== */
+.yt-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #111111;
+  border: 2px solid #ff0000;
+  padding: 1.2rem 2rem;
+  margin: 2rem 0;
+  gap: 1rem;
+  flex-wrap: wrap;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+}
+
+.yt-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.yt-banner-icon {
+  font-size: 3rem;
+  color: #ff0000;
+  filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
+}
+
+.yt-banner-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.yt-banner-name {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+.yt-banner-handle {
+  font-size: 0.85rem;
+  color: #ff0000;
+  letter-spacing: 1px;
+}
+
+.yt-banner-center {
+  text-align: center;
+}
+
+.yt-banner-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.yt-banner-count {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #ff0000;
+  text-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+  line-height: 1;
+}
+
+.yt-banner-stat-label {
+  font-size: 0.75rem;
+  color: #aaaaaa;
+  letter-spacing: 3px;
+  margin-top: 4px;
+}
+
+.yt-subscribe-btn {
+  display: inline-flex;
+  align-items: center;
+  background: #ff0000;
+  color: #000000 !important;
+  font-weight: 900;
+  font-size: 1rem;
+  padding: 0.7rem 1.8rem;
+  letter-spacing: 2px;
+  border: 2px solid #ff0000;
+  text-decoration: none !important;
+  transition: all 0.3s;
+}
+
+.yt-subscribe-btn:hover {
+  background: #000000;
+  color: #ff0000 !important;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .yt-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.2rem;
+  }
+  .yt-banner-left {
+    justify-content: center;
+  }
+}
+
+/* ===== HERO SCROLL INDICATOR FIX ===== */
 .hero-scroll-indicator {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
+  display: block;
+  margin-top: 2rem;
   color: #ff0000;
   font-size: 2rem;
   animation: bounce 2s infinite;
@@ -1037,13 +1137,13 @@ body {
 
 @keyframes bounce {
   0%, 20%, 50%, 80%, 100% {
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
   40% {
-    transform: translateX(-50%) translateY(-20px);
+    transform: translateY(-12px);
   }
   60% {
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateY(-6px);
   }
 }
 
