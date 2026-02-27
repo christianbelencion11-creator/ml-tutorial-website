@@ -3,6 +3,7 @@ import { Container, Row, Col, Form, Button, Table, Alert, Modal, Card } from 're
 import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaLink, FaImage, FaYoutube } from 'react-icons/fa'
 import { database } from '../firebase'
 import { ref, push, set, remove, onValue } from 'firebase/database'
+import YouTubeAuto from './YouTubeAuto'   // ✅ ADDED: import the actual component
 
 function Admin() {
   // ============================================
@@ -10,7 +11,7 @@ function Admin() {
   // ============================================
   const ADMIN_PASSWORD = 'mlbb123'
   // ============================================
-  
+
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,7 +22,7 @@ function Admin() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [tutorialToDelete, setTutorialToDelete] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -75,13 +76,13 @@ function Admin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!formData.title || !formData.description || !formData.thumbnail || !formData.youtubeUrl) {
       setShowSuccess('❌ Please fill in all fields!')
       setTimeout(() => setShowSuccess(''), 3000)
       return
     }
-    
+
     try {
       if (editingId) {
         await set(ref(database, `tutorials/${editingId}`), formData)
@@ -91,7 +92,7 @@ function Admin() {
         await push(tutorialsRef, formData)
         setShowSuccess('✅ New tutorial added successfully!')
       }
-      
+
       setFormData({
         title: '',
         description: '',
@@ -132,7 +133,7 @@ function Admin() {
     }
   }
 
-  const filteredTutorials = tutorials.filter(tutorial => 
+  const filteredTutorials = tutorials.filter(tutorial =>
     tutorial.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     tutorial.category?.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -211,21 +212,8 @@ function Admin() {
 
       {showSuccess && <Alert variant={showSuccess.includes('✅') ? 'success' : 'danger'} className="text-center mb-4" dismissible onClose={() => setShowSuccess('')}>{showSuccess}</Alert>}
 
-      {/* YouTube Status Card - Simple */}
-      <Card className="mb-4">
-        <Card.Header className="bg-danger text-white">
-          <h4 className="mb-0"><FaYoutube className="me-2" /> YouTube Auto Upload</h4>
-        </Card.Header>
-        <Card.Body>
-          <Alert variant="warning" className="mb-2">
-            <strong>⚠️ YouTube API Connection Issue</strong>
-          </Alert>
-          <p className="mb-1"><strong>Channel:</strong> PMC Gaming</p>
-          <p className="mb-0"><strong>Channel ID:</strong> UCimV-zkb78lvHbdb15DJILw</p>
-          <hr />
-          <p className="text-muted mb-0">Auto-sync runs every hour. Check your .env file if videos don't appear.</p>
-        </Card.Body>
-      </Card>
+      {/* ✅ FIXED: Replaced placeholder card with actual YouTubeAuto component */}
+      <YouTubeAuto />
 
       {/* Add Tutorial Form */}
       <Row>
