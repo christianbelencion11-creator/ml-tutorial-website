@@ -1,9 +1,9 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import { Container, Navbar, Nav } from 'react-bootstrap'
+import { Container, Navbar, Nav, Row, Col } from 'react-bootstrap'
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { FaGamepad, FaFire, FaCrown, FaUserShield, FaCommentDots } from 'react-icons/fa'
+import { FaGamepad, FaFire, FaCrown, FaUserShield, FaCommentDots, FaYoutube, FaFacebook, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
 import Home from './components/Home'
 import Tutorials from './components/Tutorials'
 import About from './components/About'
@@ -97,10 +97,92 @@ function AppContent() {
         </Routes>
       </Container>
 
+      {/* ===== PROFESSIONAL FOOTER ===== */}
       <footer className="pmc-footer">
         <Container>
-          <p>⚔️ 2025 PMC GAMING TUTORIALS ⚔️</p>
-          <p className="footer-tag">LEVEL UP YOUR GAME</p>
+          <div className="footer-top">
+            <Row>
+
+              {/* Brand + Description */}
+              <Col lg={4} md={6} className="mb-4 mb-lg-0">
+                <div className="footer-brand">
+                  <img
+                    src="https://scontent.fmnl30-3.fna.fbcdn.net/v/t39.30808-6/322707149_1841631216235507_1073256195438098560_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=jFDwVIaZtScQ7kNvwEg0lvg&_nc_oc=Adk2WMixZ9b4un2aRcg1Bo7K3kaMNJmIMV4wqchF5p9rIqekrgK3isNqlqtt2O49QrE&_nc_zt=23&_nc_ht=scontent.fmnl30-3.fna&_nc_gid=27SX6zTygGpOBStnP2yJgA&oh=00_AftJl8UEOFcZHUI1yIMRP477cjCcJJ4nk6nKnaMx_a5n4A&oe=699B876C"
+                    alt="PMC Gaming"
+                    className="footer-logo"
+                  />
+                  <div>
+                    <div className="footer-brand-text">PMC GAMING</div>
+                    <div className="footer-brand-tag">TUTORIALS</div>
+                  </div>
+                </div>
+                <p className="footer-desc">
+                  Your go-to source for Mobile Legends Bang Bang tutorials, hero guides, and pro strategies. Level up your game with PMC Gaming.
+                </p>
+                {/* Social Links */}
+                <div className="footer-social">
+                  <a href="https://www.youtube.com/@PMCGaming8" target="_blank" rel="noopener noreferrer" className="footer-social-btn" title="YouTube">
+                    <FaYoutube />
+                  </a>
+                  <a href="#" className="footer-social-btn" title="Facebook">
+                    <FaFacebook />
+                  </a>
+                  <a href="/contact" className="footer-social-btn" title="Contact">
+                    <FaEnvelope />
+                  </a>
+                </div>
+              </Col>
+
+              {/* Quick Links */}
+              <Col lg={2} md={6} sm={6} className="mb-4 mb-lg-0">
+                <h6 className="footer-heading">QUICK LINKS</h6>
+                <ul className="footer-links">
+                  <li><Link to="/">Home</Link></li>
+                  <li><Link to="/tutorials">Tutorials</Link></li>
+                  <li><Link to="/about">About Us</Link></li>
+                  <li><Link to="/contact">Contact</Link></li>
+                </ul>
+              </Col>
+
+              {/* Categories */}
+              <Col lg={3} md={6} sm={6} className="mb-4 mb-lg-0">
+                <h6 className="footer-heading">CATEGORIES</h6>
+                <ul className="footer-links">
+                  <li><Link to="/tutorials">Hero Guides</Link></li>
+                  <li><Link to="/tutorials">Builds</Link></li>
+                  <li><Link to="/tutorials">Pro Strategies</Link></li>
+                  <li><Link to="/tutorials">Team Tactics</Link></li>
+                  <li><Link to="/tutorials">Tips & Tricks</Link></li>
+                </ul>
+              </Col>
+
+              {/* Contact Info */}
+              <Col lg={3} md={6}>
+                <h6 className="footer-heading">CONTACT US</h6>
+                <div className="footer-contact-item">
+                  <FaYoutube className="footer-contact-icon" />
+                  <span>youtube.com/@PMCGaming8</span>
+                </div>
+                <div className="footer-contact-item">
+                  <FaEnvelope className="footer-contact-icon" />
+                  <span>support@mlbbacademy.com</span>
+                </div>
+                <div className="footer-contact-item">
+                  <FaMapMarkerAlt className="footer-contact-icon" />
+                  <span>Cabuyao, Laguna, Philippines</span>
+                </div>
+              </Col>
+
+            </Row>
+          </div>
+
+          {/* Footer Bottom */}
+          <div className="footer-bottom">
+            <p className="footer-copyright">
+              © 2025 <span>PMC GAMING TUTORIALS</span>. All rights reserved.
+            </p>
+            <p className="footer-tag">⚔️ LEVEL UP YOUR GAME ⚔️</p>
+          </div>
         </Container>
       </footer>
     </div>
