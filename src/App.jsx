@@ -124,7 +124,7 @@ function AppContent() {
                   <a href="https://www.youtube.com/@PMCGaming8" target="_blank" rel="noopener noreferrer" className="footer-social-btn" title="YouTube">
                     <FaYoutube />
                   </a>
-                  <a href="#" className="footer-social-btn" title="Facebook">
+                  <a href="https://www.facebook.com/realpmcgaming" className="footer-social-btn" title="Facebook">
                     <FaFacebook />
                   </a>
                   <a href="/contact" className="footer-social-btn" title="Contact">
@@ -165,11 +165,11 @@ function AppContent() {
                 </div>
                 <div className="footer-contact-item">
                   <FaEnvelope className="footer-contact-icon" />
-                  <span>support@mlbbacademy.com</span>
+                  <span>pmcgamingp@gmail.com</span>
                 </div>
                 <div className="footer-contact-item">
                   <FaMapMarkerAlt className="footer-contact-icon" />
-                  <span>Cabuyao, Laguna, Philippines</span>
+                  <span>Philippines</span>
                 </div>
               </Col>
 
@@ -179,9 +179,9 @@ function AppContent() {
           {/* Footer Bottom */}
           <div className="footer-bottom">
             <p className="footer-copyright">
-              © 2025 <span>PMC GAMING TUTORIALS</span>. All rights reserved.
+              © 2026 <span>PMC GAMING TUTORIALS</span>. All rights reserved.
             </p>
-            <p className="footer-tag">⚔️ LEVEL UP YOUR GAME ⚔️</p>
+            <p className="footer-tag">⚔️ SAFEST TUTORIAL CHANNEL ⚔️</p>
           </div>
         </Container>
       </footer>
