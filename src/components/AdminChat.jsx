@@ -1,250 +1,237 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { database, storage } from '../firebase'
-import { ref, push, onValue, set, remove } from 'firebase/database'
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { FaCommentDots, FaTimes, FaPaperPlane, FaGamepad, FaImage, FaCheckCircle } from 'react-icons/fa'
+import { database } from '../firebase'
+import { ref, onValue, push, set, remove } from 'firebase/database'
+import { FaCommentDots, FaPaperPlane, FaUser, FaCircle, FaInbox, FaTrash } from 'react-icons/fa'
 
-function getUserIdentity() {
-  let userId = localStorage.getItem('pmc_chat_user_id')
-  let userName = localStorage.getItem('pmc_chat_user_name')
-  if (!userId) {
-    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6)
-    const num = Math.floor(Math.random() * 9000) + 1000
-    userName = `Player #${num}`
-    localStorage.setItem('pmc_chat_user_id', userId)
-    localStorage.setItem('pmc_chat_user_name', userName)
-  }
-  return { userId, userName }
-}
-
-function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(false)
+function AdminChat() {
+  const [conversations, setConversations] = useState([])
+  const [selectedUserId, setSelectedUserId] = useState(null)
   const [messages, setMessages] = useState([])
-  const [inputText, setInputText] = useState('')
+  const [replyText, setReplyText] = useState('')
   const [sending, setSending] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [lastSeenTimestamp] = useState(parseInt(localStorage.getItem('pmc_last_seen') || '0'))
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const [showEndConfirm, setShowEndConfirm] = useState(false)
-  const [ended, setEnded] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
-  const fileInputRef = useRef(null)
-  const { userId, userName } = getUserIdentity()
 
+  // Load all conversations
   useEffect(() => {
-    const chatRef = ref(database, `chats/${userId}/messages`)
-    const unsubscribe = onValue(chatRef, (snapshot) => {
+    const chatsRef = ref(database, 'chats/')
+    onValue(chatsRef, (snapshot) => {
+      const data = snapshot.val()
+      if (data) {
+        const convos = Object.entries(data).map(([userId, val]) => ({
+          userId,
+          ...val.info,
+          hasMessages: !!val.messages
+        })).sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0))
+        setConversations(convos)
+      } else {
+        setConversations([])
+      }
+    })
+  }, [])
+
+  // Load messages for selected conversation
+  useEffect(() => {
+    if (!selectedUserId) return
+    const msgsRef = ref(database, `chats/${selectedUserId}/messages`)
+    const unsubscribe = onValue(msgsRef, (snapshot) => {
       const data = snapshot.val()
       if (data) {
         const msgs = Object.entries(data).map(([key, val]) => ({ id: key, ...val }))
           .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
         setMessages(msgs)
-        if (!isOpen) {
-          const unread = msgs.filter(m => m.sender === 'admin' && (m.timestamp || 0) > lastSeenTimestamp).length
-          setUnreadCount(unread)
-        }
       } else {
         setMessages([])
       }
     })
+    set(ref(database, `chats/${selectedUserId}/info/unreadByAdmin`), false)
     return () => unsubscribe()
-  }, [userId, isOpen, lastSeenTimestamp])
+  }, [selectedUserId])
 
+  // ✅ SCROLL FIX - only scrolls inside messages div, not the whole page
   useEffect(() => {
-    if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
-  }, [messages, isOpen])
+  }, [messages])
 
+  // ✅ Keep focus on input after sending
   useEffect(() => {
-    if (isOpen) {
-      const now = Date.now()
-      localStorage.setItem('pmc_last_seen', now.toString())
-      setUnreadCount(0)
-      inputRef.current?.focus()
-      set(ref(database, `chats/${userId}/info`), {
-        userName, userId, lastSeen: now, page: window.location.pathname, status: 'open'
-      })
+    if (!sending && inputRef.current && selectedUserId) {
+      inputRef.current.focus()
     }
-  }, [isOpen, userId, userName])
+  }, [sending, selectedUserId])
 
-  const sendMessage = async (text = inputText, type = 'text', imageUrl = null) => {
-    if ((!text.trim() && !imageUrl) || sending) return
+  const sendReply = async () => {
+    if (!replyText.trim() || !selectedUserId || sending) return
     setSending(true)
-    const chatRef = ref(database, `chats/${userId}/messages`)
-    const msgData = {
-      text: text.trim(),
-      sender: 'user',
-      userName,
+    const msgsRef = ref(database, `chats/${selectedUserId}/messages`)
+    await push(msgsRef, {
+      text: replyText.trim(),
+      sender: 'admin',
+      userName: 'PMC Support',
       timestamp: Date.now(),
-      type,
-      ...(imageUrl && { imageUrl })
-    }
-    await push(chatRef, msgData)
-    set(ref(database, `chats/${userId}/info`), {
-      userName, userId,
-      lastMessage: type === 'image' ? '📷 Image' : text.trim().substring(0, 60),
-      lastMessageTime: Date.now(),
-      unreadByAdmin: true,
-      page: window.location.pathname,
-      status: 'open'
     })
-    setInputText('')
+    set(ref(database, `chats/${selectedUserId}/info/lastMessage`), replyText.trim().substring(0, 60))
+    set(ref(database, `chats/${selectedUserId}/info/lastMessageTime`), Date.now())
+    setReplyText('')
     setSending(false)
   }
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    if (file.size > 5 * 1024 * 1024) { alert('Image must be under 5MB'); return }
-    setUploadingImage(true)
-    try {
-      const imgRef = storageRef(storage, `chat-images/${userId}/${Date.now()}_${file.name}`)
-      await uploadBytes(imgRef, file)
-      const url = await getDownloadURL(imgRef)
-      await sendMessage('📷 Image', 'image', url)
-    } catch (err) {
-      console.error('Upload failed:', err)
-      alert('Upload failed. Try again.')
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendReply()
     }
-    setUploadingImage(false)
-    e.target.value = ''
   }
 
-  const handleEndConversation = async () => {
-    try {
-      // Delete all messages with images from storage
-      for (const msg of messages) {
-        if (msg.imageUrl) {
-          try {
-            const url = new URL(msg.imageUrl)
-            const path = decodeURIComponent(url.pathname.split('/o/')[1].split('?')[0])
-            await deleteObject(storageRef(storage, path))
-          } catch {}
-        }
-      }
-      // Delete entire conversation from Firebase
-      await remove(ref(database, `chats/${userId}`))
+  const deleteConversation = async (userId) => {
+    if (!confirm('Delete this conversation?')) return
+    await remove(ref(database, `chats/${userId}`))
+    if (selectedUserId === userId) {
+      setSelectedUserId(null)
       setMessages([])
-      setEnded(true)
-      setTimeout(() => { setEnded(false); setIsOpen(false); setShowEndConfirm(false) }, 2500)
-    } catch (err) {
-      console.error('Error ending conversation:', err)
     }
   }
 
   const formatTime = (ts) => {
     if (!ts) return ''
-    return new Date(ts).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })
+    const date = new Date(ts)
+    const now = new Date()
+    if (date.toDateString() === now.toDateString())
+      return date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
   }
 
+  const selectedConvo = conversations.find(c => c.userId === selectedUserId)
+
   return (
-    <>
-      {isOpen && (
-        <div className="cw-window">
-          {/* Header */}
-          <div className="cw-header">
-            <div className="cw-header-left">
-              <div className="cw-avatar"><FaGamepad size={15} /></div>
-              <div>
-                <div className="cw-header-title">PMC Support</div>
-                <div className="cw-header-status"><span className="cw-dot" /> Online</div>
-              </div>
-            </div>
-            <div className="cw-header-actions">
-              <button className="cw-end-btn" onClick={() => setShowEndConfirm(true)} title="End conversation">
-                ✕ End
-              </button>
-              <button className="cw-close-btn" onClick={() => setIsOpen(false)}>
-                <FaTimes size={13} />
-              </button>
-            </div>
-          </div>
+    <div className="admin-chat-container">
 
-          {/* End confirmation */}
-          {showEndConfirm && (
-            <div className="cw-confirm-overlay">
-              <div className="cw-confirm-box">
-                <p>End this conversation?</p>
-                <small>All messages and images will be deleted.</small>
-                <div className="cw-confirm-btns">
-                  <button className="cw-confirm-yes" onClick={handleEndConversation}>Yes, End</button>
-                  <button className="cw-confirm-no" onClick={() => setShowEndConfirm(false)}>Cancel</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Ended state */}
-          {ended && (
-            <div className="cw-ended">
-              <FaCheckCircle size={32} style={{ color: '#22c55e', marginBottom: '8px' }} />
-              <p>Conversation ended!</p>
-              <small>Thanks for chatting with PMC Support 🎮</small>
-            </div>
-          )}
-
-          {/* Messages */}
-          {!ended && (
-            <>
-              <div className="cw-messages">
-                <div className="cw-system-msg">
-                  Welcome, <strong>{userName}</strong>! Ask us anything about MLBB. 🎮
-                </div>
-                {messages.length === 0 && (
-                  <div className="cw-empty">
-                    <FaCommentDots size={26} style={{ color: '#2a2a2a', marginBottom: '8px' }} />
-                    <p>No messages yet</p>
-                  </div>
-                )}
-                {messages.map((msg) => (
-                  <div key={msg.id} className={`cw-bubble-wrap ${msg.sender === 'user' ? 'cw-right' : 'cw-left'}`}>
-                    {msg.sender === 'admin' && <div className="cw-sender-name">PMC Support</div>}
-                    <div className={`cw-bubble ${msg.sender === 'user' ? 'cw-bubble-user' : 'cw-bubble-admin'}`}>
-                      {msg.type === 'image' && msg.imageUrl ? (
-                        <img src={msg.imageUrl} alt="uploaded" className="cw-img-preview" onClick={() => window.open(msg.imageUrl, '_blank')} />
-                      ) : msg.text}
-                    </div>
-                    <div className={`cw-time ${msg.sender === 'user' ? 'cw-time-right' : ''}`}>{formatTime(msg.timestamp)}</div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input */}
-              <div className="cw-input-area">
-                <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
-                <button className="cw-img-btn" onClick={() => fileInputRef.current?.click()} disabled={uploadingImage} title="Send image">
-                  {uploadingImage ? '...' : <FaImage size={14} />}
-                </button>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  className="cw-input"
-                  placeholder="Type a message..."
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-                  maxLength={500}
-                />
-                <button className="cw-send-btn" onClick={() => sendMessage()} disabled={!inputText.trim() || sending}>
-                  <FaPaperPlane size={13} />
-                </button>
-              </div>
-              <div className="cw-footer-tag">Chatting as <strong>{userName}</strong></div>
-            </>
+      {/* Sidebar */}
+      <div className="admin-chat-sidebar">
+        <div className="admin-chat-sidebar-header">
+          <FaInbox className="me-2" /> CONVERSATIONS
+          {conversations.filter(c => c.unreadByAdmin).length > 0 && (
+            <span className="admin-chat-unread-total">
+              {conversations.filter(c => c.unreadByAdmin).length}
+            </span>
           )}
         </div>
-      )}
 
-      {/* Toggle button */}
-      <button className="cw-toggle" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <FaTimes size={21} /> : <FaCommentDots size={21} />}
-        {!isOpen && unreadCount > 0 && <span className="cw-badge">{unreadCount}</span>}
-      </button>
-    </>
+        {conversations.length === 0 ? (
+          <div className="admin-chat-empty-sidebar">
+            <FaCommentDots size={28} style={{ color: '#333', marginBottom: '8px' }} />
+            <p>No conversations yet</p>
+          </div>
+        ) : (
+          <div className="admin-chat-list">
+            {conversations.map(convo => (
+              <div
+                key={convo.userId}
+                className={`admin-chat-item ${selectedUserId === convo.userId ? 'active' : ''}`}
+                onClick={() => setSelectedUserId(convo.userId)}
+              >
+                <div className="admin-chat-item-avatar"><FaUser size={14} /></div>
+                <div className="admin-chat-item-info">
+                  <div className="admin-chat-item-name">
+                    {convo.userName || 'Unknown Player'}
+                    {convo.unreadByAdmin && <FaCircle className="admin-unread-dot" />}
+                  </div>
+                  <div className="admin-chat-item-preview">
+                    {convo.lastMessage || 'No messages yet'}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
+                  <div className="admin-chat-item-time">{formatTime(convo.lastMessageTime)}</div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteConversation(convo.userId) }}
+                    style={{ background: 'transparent', border: 'none', color: '#333', cursor: 'pointer', padding: '2px', fontSize: '0.7rem' }}
+                    title="Delete conversation"
+                  >
+                    <FaTrash size={10} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Main chat area */}
+      <div className="admin-chat-main">
+        {!selectedUserId ? (
+          <div className="admin-chat-placeholder">
+            <FaCommentDots size={40} style={{ color: '#222', marginBottom: '12px' }} />
+            <p>Select a conversation to start replying</p>
+          </div>
+        ) : (
+          <>
+            {/* Chat header */}
+            <div className="admin-chat-main-header">
+              <div className="admin-chat-user-avatar"><FaUser size={16} /></div>
+              <div>
+                <div className="admin-chat-user-name">{selectedConvo?.userName || 'Unknown'}</div>
+                <div className="admin-chat-user-meta">
+                  {selectedConvo?.page && `Viewing: ${selectedConvo.page}`}
+                </div>
+              </div>
+              <button
+                onClick={() => deleteConversation(selectedUserId)}
+                style={{ marginLeft: 'auto', background: 'transparent', border: '1px solid #1e1e1e', color: '#555', borderRadius: '6px', padding: '5px 12px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                ✓ Resolve
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div className="admin-chat-messages">
+              {messages.map((msg) => (
+                <div key={msg.id} className={`admin-msg-wrap ${msg.sender === 'admin' ? 'admin-msg-right' : 'admin-msg-left'}`}>
+                  {msg.sender === 'user' && <div className="admin-msg-label">{msg.userName}</div>}
+                  <div className={`admin-msg-bubble ${msg.sender === 'admin' ? 'admin-msg-bubble-admin' : 'admin-msg-bubble-user'}`}>
+                    {msg.type === 'image' && msg.imageUrl ? (
+                      <img
+                        src={msg.imageUrl}
+                        alt="uploaded"
+                        style={{ maxWidth: '180px', maxHeight: '180px', borderRadius: '8px', cursor: 'pointer', display: 'block' }}
+                        onClick={() => window.open(msg.imageUrl, '_blank')}
+                      />
+                    ) : msg.text}
+                  </div>
+                  <div className={`admin-msg-time ${msg.sender === 'admin' ? 'text-end' : ''}`}>
+                    {formatTime(msg.timestamp)}
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Reply input */}
+            <div className="admin-chat-input-area">
+              <input
+                ref={inputRef}
+                type="text"
+                className="admin-chat-input"
+                placeholder={`Reply to ${selectedConvo?.userName || 'user'}...`}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                maxLength={500}
+              />
+              <button
+                className="admin-chat-send-btn"
+                onClick={sendReply}
+                disabled={!replyText.trim() || sending}
+              >
+                <FaPaperPlane size={14} /> Send
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 
-export default ChatWidget
+export default AdminChat
