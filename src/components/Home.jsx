@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Row, Col } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
-import { FaPlay, FaUsers, FaVideo, FaTrophy, FaGamepad, FaSkull, FaBolt, FaFire, FaCrown, FaYoutube } from 'react-icons/fa'
+import { FaUsers, FaVideo, FaTrophy, FaGamepad, FaFire, FaCrown, FaYoutube } from 'react-icons/fa'
 
 const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY
 const CHANNEL_ID = import.meta.env.VITE_YOUTUBE_CHANNEL_ID
@@ -11,7 +11,6 @@ function Home({ searchTerm, setSearchTerm }) {
   const [subscriberCount, setSubscriberCount] = useState(null)
   const [loadingSubs, setLoadingSubs] = useState(true)
 
-  // ✅ Fetch live subscriber count
   useEffect(() => {
     const fetchSubscribers = async () => {
       try {
@@ -22,15 +21,10 @@ function Home({ searchTerm, setSearchTerm }) {
         const data = await res.json()
         const count = data?.items?.[0]?.statistics?.subscriberCount
         if (count) {
-          // Format number nicely e.g. 12300 → "12.3K"
           const num = parseInt(count)
-          if (num >= 1000000) {
-            setSubscriberCount((num / 1000000).toFixed(1) + 'M')
-          } else if (num >= 1000) {
-            setSubscriberCount((num / 1000).toFixed(1) + 'K')
-          } else {
-            setSubscriberCount(num.toString())
-          }
+          if (num >= 1000000) setSubscriberCount((num / 1000000).toFixed(1) + 'M')
+          else if (num >= 1000) setSubscriberCount((num / 1000).toFixed(1) + 'K')
+          else setSubscriberCount(num.toString())
         }
       } catch (e) {
         console.error('Failed to fetch subscribers:', e)
@@ -41,13 +35,6 @@ function Home({ searchTerm, setSearchTerm }) {
     fetchSubscribers()
   }, [])
 
-  // ✅ Handle search — redirect to /tutorials with search
-  const handleSearchKeyDown = (e) => {
-    if (e.key === 'Enter' && searchTerm?.trim()) {
-      navigate('/tutorials')
-    }
-  }
-
   return (
     <Container fluid className="home-container p-0">
 
@@ -55,13 +42,13 @@ function Home({ searchTerm, setSearchTerm }) {
       <div
         className="hero-section"
         style={{
-          backgroundImage: `linear-gradient(
-            rgba(0, 0, 0, 0.7),
-            rgba(0, 0, 0, 0.7)
-          ), url('https://club.jollymax.com/wp-content/uploads/2025/05/cover-14-1024x576.webp')`
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+            url('https://club.jollymax.com/wp-content/uploads/2025/05/cover-14-1024x576.webp')`
         }}
       >
         <div className="hero-overlay"></div>
+
+        {/* Hero content — no scroll arrow inside here */}
         <div className="hero-content text-center">
           <h1 className="hero-title">
             <span className="hero-title-main">PMC GAMING</span>
@@ -71,35 +58,32 @@ function Home({ searchTerm, setSearchTerm }) {
             Level up your Mobile Legends skills with pro strategies, hero guides, and tournament-winning tactics!
           </p>
           <div className="hero-buttons">
-            {/* ✅ "Watch YouTube" button → opens YouTube channel */}
-            <a
-              href="https://www.youtube.com/@PMCGaming8"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href="https://www.youtube.com/@PMCGaming8" target="_blank" rel="noopener noreferrer">
               <button className="hero-btn hero-btn-primary">
                 <FaYoutube className="me-2" /> WATCH YOUTUBE
               </button>
             </a>
-
-            {/* ✅ "Tutorials" button → goes to /tutorials page */}
             <Link to="/tutorials">
               <button className="hero-btn hero-btn-secondary">
                 <FaGamepad className="me-2" /> TUTORIALS
               </button>
             </Link>
           </div>
+        </div>
 
-          {/* ✅ Scroll arrow — fixed spacing so it doesn't overlap text */}
-          <div className="hero-scroll-indicator">
-            <span>▼</span>
-          </div>
+        {/* ✅ Scroll arrow — OUTSIDE hero-content, inside hero-section
+            position: absolute bottom works correctly here */}
+        <div
+          className="hero-scroll-indicator"
+          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+        >
+          ▼
         </div>
       </div>
 
       <Container>
 
-        {/* ✅ YOUTUBE CHANNEL BANNER — live subscriber count */}
+        {/* YOUTUBE CHANNEL BANNER */}
         <div className="yt-banner">
           <div className="yt-banner-left">
             <FaYoutube className="yt-banner-icon" />
@@ -128,7 +112,7 @@ function Home({ searchTerm, setSearchTerm }) {
           </div>
         </div>
 
-        {/* STATS SECTION */}
+        {/* STATS */}
         <div className="stats-dark">
           <div className="stat-dark-card">
             <FaVideo className="stat-dark-icon" />
@@ -152,7 +136,7 @@ function Home({ searchTerm, setSearchTerm }) {
           </div>
         </div>
 
-        {/* FEATURES SECTION */}
+        {/* FEATURES */}
         <h2 className="section-title-dark">
           <FaFire className="title-fire" /> CHOOSE YOUR PATH <FaFire className="title-fire" />
         </h2>
@@ -163,9 +147,7 @@ function Home({ searchTerm, setSearchTerm }) {
               <div className="feature-dark-icon"><FaVideo /></div>
               <h3 className="feature-dark-title">HERO GUIDES</h3>
               <p className="feature-dark-text">Master every hero with frame-perfect combos and pro gameplay analysis</p>
-              <Link to="/tutorials">
-                <button className="feature-dark-btn">TRAIN NOW →</button>
-              </Link>
+              <Link to="/tutorials"><button className="feature-dark-btn">TRAIN NOW →</button></Link>
             </div>
           </Col>
           <Col md={4}>
@@ -173,9 +155,7 @@ function Home({ searchTerm, setSearchTerm }) {
               <div className="feature-dark-icon"><FaTrophy /></div>
               <h3 className="feature-dark-title">PRO STRATEGIES</h3>
               <p className="feature-dark-text">Tournament-winning tactics and decision-making from pro players</p>
-              <Link to="/tutorials">
-                <button className="feature-dark-btn">MASTER NOW →</button>
-              </Link>
+              <Link to="/tutorials"><button className="feature-dark-btn">MASTER NOW →</button></Link>
             </div>
           </Col>
           <Col md={4}>
@@ -183,14 +163,12 @@ function Home({ searchTerm, setSearchTerm }) {
               <div className="feature-dark-icon"><FaUsers /></div>
               <h3 className="feature-dark-title">TEAM TACTICS</h3>
               <p className="feature-dark-text">Perfect team composition and coordination for ranked games</p>
-              <Link to="/tutorials">
-                <button className="feature-dark-btn">FORM TEAM →</button>
-              </Link>
+              <Link to="/tutorials"><button className="feature-dark-btn">FORM TEAM →</button></Link>
             </div>
           </Col>
         </Row>
 
-        {/* CTA SECTION */}
+        {/* CTA */}
         <div className="cta-dark">
           <div className="cta-dark-content text-center">
             <h2 className="cta-dark-title">READY TO DOMINATE?</h2>
