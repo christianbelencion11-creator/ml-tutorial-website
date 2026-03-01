@@ -35,7 +35,6 @@ function ChatWidget() {
   const [hasDragged, setHasDragged] = useState(false)
   const dragRef = useRef(null)
 
-  const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
   const { userId, userName } = getUserIdentity()
@@ -122,8 +121,11 @@ function ChatWidget() {
     return () => unsubscribe()
   }, [userId, isOpen, lastSeenTimestamp])
 
+  const messagesContainerRef = useRef(null)
   useEffect(() => {
-    if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (isOpen && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
   }, [messages, isOpen])
 
   useEffect(() => {
@@ -196,13 +198,23 @@ function ChatWidget() {
 
   const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : ''
 
-  // Determine chat window position - snap to left or right side
+  // Determine chat window position - always opens ABOVE the bubble
   const isLeft = pos.x !== null && pos.x < window.innerWidth / 2
+  const BUBBLE_SIZE = 56
+  const GAP = 12
+  const WIN_W = 360
+  const WIN_H = 520
+
   const windowStyle = pos.x !== null ? {
     position: 'fixed',
-    bottom: `${window.innerHeight - pos.y - 28}px`,
-    ...(isLeft ? { left: `${pos.x - 14}px` } : { right: `${window.innerWidth - pos.x - 28}px` }),
-    top: 'auto', transform: 'none',
+    // Place above the bubble
+    top: Math.max(8, pos.y - WIN_H - BUBBLE_SIZE / 2 - GAP),
+    // Horizontal: align with bubble but keep on screen
+    ...(isLeft
+      ? { left: Math.min(pos.x - BUBBLE_SIZE / 2, window.innerWidth - WIN_W - 8) }
+      : { left: Math.max(8, pos.x - WIN_W + BUBBLE_SIZE / 2) }
+    ),
+    width: `${WIN_W}px`,
     zIndex: 9997,
   } : {}
 
@@ -247,7 +259,7 @@ function ChatWidget() {
             </div>
           ) : (
             <>
-              <div className="cw-messages">
+              <div className="cw-messages" ref={messagesContainerRef}>
                 <div className="cw-system-msg">Welcome, <strong>{userName}</strong>! Ask us anything about MLBB. 🎮</div>
                 {messages.length === 0 && (
                   <div className="cw-empty"><FaCommentDots size={26} style={{ color: '#2a2a2a', marginBottom: '8px' }} /><p>No messages yet</p></div>
@@ -263,7 +275,6 @@ function ChatWidget() {
                     <div className={`cw-time ${msg.sender === 'user' ? 'cw-time-right' : ''}`}>{formatTime(msg.timestamp)}</div>
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
               </div>
               <div className="cw-input-area">
                 <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />

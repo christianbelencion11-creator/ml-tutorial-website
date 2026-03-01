@@ -9,7 +9,6 @@ function AdminChat() {
   const [messages, setMessages] = useState([])
   const [replyText, setReplyText] = useState('')
   const [sending, setSending] = useState(false)
-  const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
   // Load all conversations
@@ -48,10 +47,11 @@ function AdminChat() {
     return () => unsubscribe()
   }, [selectedUserId])
 
-  // ✅ SCROLL FIX - block: nearest para hindi mag-scroll ang buong page
+  // ✅ SCROLL FIX - scroll only the messages container, never the page
+  const messagesContainerRef = useRef(null)
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
     }
   }, [messages])
 
@@ -178,7 +178,7 @@ function AdminChat() {
             </div>
 
             {/* Messages */}
-            <div className="ac-messages">
+            <div className="ac-messages" ref={messagesContainerRef}>
               {messages.length === 0 && (
                 <div style={{ textAlign: 'center', color: '#2a2a2a', fontSize: '0.8rem', marginTop: '20px' }}>
                   No messages yet
@@ -207,7 +207,7 @@ function AdminChat() {
                   </div>
                 </div>
               ))}
-              <div ref={messagesEndRef} />
+
             </div>
 
             {/* Input */}
