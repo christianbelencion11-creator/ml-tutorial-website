@@ -7,7 +7,7 @@ import YouTubeAuto from './YouTubeAuto'
 import AdminChat from './AdminChat'
 
 function Admin() {
-  const ADMIN_PASSWORD = 'mlbb123'
+  const ADMIN_PASSWORD = '09195911297'
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
