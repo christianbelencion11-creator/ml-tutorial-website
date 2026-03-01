@@ -91,6 +91,19 @@ function ChatWidget() {
     }
   }, [dragging, onDragMove, onDragEnd])
 
+  // Listen for contact form open event
+  useEffect(() => {
+    const handleOpenChat = (e) => {
+      setIsOpen(true)
+      if (e.detail?.message) {
+        setInputText(e.detail.message)
+        setTimeout(() => inputRef.current?.focus(), 300)
+      }
+    }
+    window.addEventListener('pmc_open_chat', handleOpenChat)
+    return () => window.removeEventListener('pmc_open_chat', handleOpenChat)
+  }, [])
+
   // Messages
   useEffect(() => {
     const chatRef = ref(database, `chats/${userId}/messages`)

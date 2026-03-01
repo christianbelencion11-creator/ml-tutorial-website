@@ -1723,3 +1723,39 @@ body {
   .al-corner-tr, .al-corner-br { right: 10px; }
   .al-corner-bl, .al-corner-br { bottom: 32px; }
 }
+
+/* ===== TUTORIALS PAGINATION (Google style) ===== */
+.tut-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 4px; margin: 2.5rem 0 1rem; flex-wrap: wrap;
+}
+.tut-page-btn {
+  min-width: 38px; height: 38px; padding: 0 10px;
+  background: transparent; border: 1px solid #1e1e1e;
+  color: #888; font-family: 'Courier New', monospace;
+  font-size: 0.85rem; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  border-radius: 4px;
+}
+.tut-page-btn:hover:not(:disabled) {
+  border-color: #ff0000; color: #ff0000; background: rgba(255,0,0,0.06);
+}
+.tut-page-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.tut-page-active {
+  background: #ff0000 !important; border-color: #ff0000 !important;
+  color: #000 !important; font-weight: 900;
+}
+.tut-page-nav { font-size: 0.78rem; letter-spacing: 1px; padding: 0 14px; }
+.tut-page-dots {
+  color: #333; font-size: 0.85rem; padding: 0 4px;
+  display: flex; align-items: center;
+}
+.tut-results-info {
+  text-align: center; color: #333; font-size: 0.72rem;
+  font-family: 'Courier New', monospace; letter-spacing: 1px;
+  margin-bottom: 2rem;
+}
+.page-indicator {
+  color: #555; font-size: 0.72rem; font-family: 'Courier New', monospace;
+  letter-spacing: 1px; margin-left: auto;
+}
