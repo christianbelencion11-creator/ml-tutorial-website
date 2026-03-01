@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Container, Button, Spinner } from 'react-bootstrap'
+import { Container, Spinner } from 'react-bootstrap'
 import { useParams, useNavigate } from 'react-router-dom'
-import { FaArrowLeft, FaPlay, FaCalendar, FaTag } from 'react-icons/fa'
+import { FaArrowLeft, FaCalendar, FaTag, FaPlay } from 'react-icons/fa'
 import { database } from '../firebase'
 import { ref, onValue } from 'firebase/database'
 
@@ -13,8 +13,6 @@ function TutorialDetail() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    console.log("Tutorial ID from URL:", id) // Check if ID is received
-    
     if (!id) {
       setError('No tutorial ID provided')
       setLoading(false)
@@ -22,11 +20,8 @@ function TutorialDetail() {
     }
 
     const tutorialRef = ref(database, `tutorials/${id}`)
-    
     onValue(tutorialRef, (snapshot) => {
       const data = snapshot.val()
-      console.log("Firebase data for ID:", id, data) // Check if data is retrieved
-      
       if (data) {
         setTutorial({ id, ...data })
         setError('')
@@ -34,89 +29,104 @@ function TutorialDetail() {
         setError('Tutorial not found')
       }
       setLoading(false)
-    }, (error) => {
-      console.error("Firebase error:", error)
+    }, (err) => {
+      console.error("Firebase error:", err)
       setError('Error loading tutorial')
       setLoading(false)
     })
   }, [id])
 
-  const handleGoBack = () => {
-    navigate('/tutorials')
-  }
-
   if (loading) {
     return (
       <Container className="text-center py-5">
-        <Spinner animation="border" variant="danger" />
-        <p className="mt-3">Loading tutorial...</p>
+        <Spinner animation="border" variant="danger" style={{ width: '2.5rem', height: '2.5rem' }} />
+        <p className="mt-3" style={{ color: '#555', fontSize: '0.9rem' }}>Loading tutorial...</p>
       </Container>
     )
   }
 
-  if (error) {
+  if (error || !tutorial) {
     return (
       <Container className="text-center py-5">
-        <h3 className="text-danger mb-4">❌ {error}</h3>
-        <Button variant="danger" onClick={handleGoBack}>
-          <FaArrowLeft className="me-2" /> Back to Tutorials
-        </Button>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+        <h4 style={{ color: '#fff', marginBottom: '0.5rem' }}>
+          {error || 'Tutorial not found'}
+        </h4>
+        <p style={{ color: '#555', fontSize: '0.9rem', marginBottom: '2rem' }}>
+          This tutorial may have been removed or the link is invalid.
+        </p>
+        <button className="back-btn" onClick={() => navigate('/tutorials')}>
+          <FaArrowLeft size={12} /> Back to Tutorials
+        </button>
       </Container>
     )
   }
 
-  if (!tutorial) {
-    return (
-      <Container className="text-center py-5">
-        <h3 className="text-danger mb-4">Tutorial not found</h3>
-        <Button variant="danger" onClick={handleGoBack}>
-          <FaArrowLeft className="me-2" /> Back to Tutorials
-        </Button>
-      </Container>
-    )
-  }
+  const formattedDate = tutorial.date
+    ? new Date(tutorial.date).toLocaleDateString('en-PH', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      })
+    : null
 
   return (
     <Container>
-      <Button 
-        variant="outline-danger" 
-        onClick={handleGoBack}
-        className="mb-4"
-      >
-        <FaArrowLeft className="me-2" /> Back to Tutorials
-      </Button>
+      <div className="tutorial-detail-wrapper">
 
-      <div className="tutorial-detail-card">
+        {/* Back button */}
+        <button className="back-btn" onClick={() => navigate('/tutorials')}>
+          <FaArrowLeft size={12} /> Back to Tutorials
+        </button>
+
+        {/* Category tag */}
+        {tutorial.category && (
+          <div>
+            <span className="detail-category-tag">{tutorial.category}</span>
+          </div>
+        )}
+
+        {/* Title */}
         <h1 className="tutorial-detail-title">{tutorial.title}</h1>
-        
-        <div className="tutorial-meta-info mb-4">
-          <span className="me-4">
-            <FaTag className="text-danger me-2" /> {tutorial.category}
-          </span>
-          <span>
-            <FaCalendar className="text-danger me-2" /> {tutorial.date}
-          </span>
+
+        {/* Meta row */}
+        <div className="detail-meta-row">
+          {formattedDate && (
+            <span className="detail-meta-item">
+              <FaCalendar size={11} /> {formattedDate}
+            </span>
+          )}
+          {tutorial.autoImported && (
+            <span className="detail-meta-item">
+              <FaPlay size={11} /> Auto-imported from YouTube
+            </span>
+          )}
         </div>
-        
+
+        {/* Video Player */}
         <div className="video-container">
           {tutorial.youtubeUrl ? (
             <iframe
               src={tutorial.youtubeUrl}
               title={tutorial.title}
               allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               className="video-iframe"
             />
           ) : (
             <div className="no-video-placeholder">
-              <p>No video URL provided</p>
+              <FaPlay size={32} style={{ color: '#333' }} />
+              <p>No video available</p>
             </div>
           )}
         </div>
 
-        <div className="tutorial-description mt-4">
-          <h3>Description</h3>
-          <p>{tutorial.description}</p>
-        </div>
+        {/* Description */}
+        {tutorial.description && (
+          <div className="detail-description-box">
+            <p className="detail-description-heading">About this tutorial</p>
+            <p className="detail-description-text">{tutorial.description}</p>
+          </div>
+        )}
+
       </div>
     </Container>
   )

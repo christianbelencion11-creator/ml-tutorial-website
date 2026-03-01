@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Container, Row, Col, Form, Spinner } from 'react-bootstrap'
+import { Container, Form, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { FaPlay, FaFilter } from 'react-icons/fa'
 import { database } from '../firebase'
@@ -18,10 +18,7 @@ function Tutorials({ searchTerm }) {
     onValue(tutorialsRef, (snapshot) => {
       const data = snapshot.val()
       if (data) {
-        const tutorialsArray = Object.keys(data).map(key => ({
-          id: key,
-          ...data[key]
-        }))
+        const tutorialsArray = Object.keys(data).map(key => ({ id: key, ...data[key] }))
         tutorialsArray.sort((a, b) => new Date(b.date) - new Date(a.date))
         setTutorials(tutorialsArray)
         const uniqueCategories = ['all', ...new Set(tutorialsArray.map(t => t.category).filter(Boolean))]
@@ -39,21 +36,17 @@ function Tutorials({ searchTerm }) {
   useEffect(() => {
     let filtered = tutorials
     if (searchTerm) {
-      filtered = filtered.filter(tutorial =>
-        (tutorial.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (tutorial.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (tutorial.category?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(t =>
+        (t.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (t.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (t.category?.toLowerCase() || '').includes(searchTerm.toLowerCase())
       )
     }
     if (category !== 'all') {
-      filtered = filtered.filter(tutorial => tutorial.category === category)
+      filtered = filtered.filter(t => t.category === category)
     }
     setFilteredTutorials(filtered)
   }, [searchTerm, category, tutorials])
-
-  const handleTutorialClick = (tutorialId) => {
-    navigate(`/tutorial/${tutorialId}`)
-  }
 
   if (loading) {
     return (
@@ -66,7 +59,6 @@ function Tutorials({ searchTerm }) {
 
   return (
     <Container>
-      {/* Header */}
       <div className="tutorials-header mb-2">
         <h1 className="tutorials-page-title">PMC GAMING TUTORIALS</h1>
         <p className="tutorials-page-subtitle">
@@ -74,11 +66,8 @@ function Tutorials({ searchTerm }) {
         </p>
         <hr className="tutorials-divider" />
 
-        {/* Filter Bar */}
         <div className="filter-bar">
-          <span className="filter-label">
-            <FaFilter size={11} /> FILTER
-          </span>
+          <span className="filter-label"><FaFilter size={11} /> FILTER</span>
           <Form.Select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -96,10 +85,9 @@ function Tutorials({ searchTerm }) {
         </div>
       </div>
 
-      {/* Grid or Empty State */}
       {filteredTutorials.length === 0 ? (
         <div className="no-tutorials">
-          <div className="no-tutorials-icon">🎮</div>
+          <span className="no-tutorials-icon">🎮</span>
           <h4 style={{ color: '#ffffff', marginBottom: '0.5rem' }}>No Tutorials Found</h4>
           <p style={{ color: '#555', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
             {searchTerm
@@ -118,17 +106,14 @@ function Tutorials({ searchTerm }) {
             <div
               key={tutorial.id}
               className="tutorial-card"
-              onClick={() => handleTutorialClick(tutorial.id)}
+              onClick={() => navigate(`/tutorial/${tutorial.id}`)}
             >
               <div className="thumbnail-container">
                 <img
-                  src={tutorial.thumbnail || 'https://via.placeholder.com/300x185?text=No+Thumbnail'}
+                  src={tutorial.thumbnail || 'https://via.placeholder.com/300x190?text=No+Thumbnail'}
                   alt={tutorial.title}
                   className="thumbnail"
-                  onError={(e) => {
-                    e.target.onerror = null
-                    e.target.src = 'https://via.placeholder.com/300x185?text=No+Image'
-                  }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/300x190?text=No+Image' }}
                 />
                 <div className="play-overlay">
                   <div className="play-icon-wrap">
@@ -142,18 +127,16 @@ function Tutorials({ searchTerm }) {
                 <h3 className="tutorial-title">{tutorial.title || 'Untitled'}</h3>
                 <p className="tutorial-description">
                   {tutorial.description
-                    ? (tutorial.description.length > 90
-                      ? tutorial.description.substring(0, 90) + '...'
-                      : tutorial.description)
+                    ? (tutorial.description.length > 90 ? tutorial.description.substring(0, 90) + '...' : tutorial.description)
                     : 'No description available.'}
                 </p>
                 <div className="tutorial-meta">
                   <span className="tutorial-date">
-                    {tutorial.date ? new Date(tutorial.date).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                    {tutorial.date
+                      ? new Date(tutorial.date).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
+                      : '—'}
                   </span>
-                  <span className="watch-now">
-                    Watch Now <FaPlay size={9} />
-                  </span>
+                  <span className="watch-now">Watch Now <FaPlay size={9} /></span>
                 </div>
               </div>
             </div>
