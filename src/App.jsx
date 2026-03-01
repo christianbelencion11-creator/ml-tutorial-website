@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import { Container, Navbar, Nav, Row, Col } from 'react-bootstrap'
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { FaGamepad, FaFire, FaCrown, FaUserShield, FaCommentDots, FaYoutube, FaFacebook, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
+import { FaGamepad, FaFire, FaMedal, FaUserShield, FaCommentDots, FaYoutube, FaFacebook, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
 import Home from './components/Home'
 import Tutorials from './components/Tutorials'
 import About from './components/About'
@@ -60,7 +60,7 @@ function AppContent() {
                 <FaGamepad className="nav-icon" /> TUTORIALS
               </Nav.Link>
               <Nav.Link as={Link} to="/about" className="nav-item" onClick={handleNavClick}>
-                <FaCrown className="nav-icon" /> ABOUT
+                <FaMedal className="nav-icon" /> ABOUT
               </Nav.Link>
               <Nav.Link as={Link} to="/contact" className="nav-item" onClick={handleNavClick}>
                 <FaCommentDots className="nav-icon" /> CONTACT

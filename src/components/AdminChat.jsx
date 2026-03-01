@@ -100,7 +100,7 @@ function AdminChat() {
   const totalUnread = conversations.filter(c => c.unreadByAdmin).length
 
   return (
-    <div className="ac-container">
+    <div className="ac-container" style={{ height: "100%", borderRadius: 0, border: "none", borderTop: "1px solid #141414" }}>
 
       {/* ===== SIDEBAR ===== */}
       <div className="ac-sidebar">

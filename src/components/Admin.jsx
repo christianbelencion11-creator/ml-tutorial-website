@@ -148,7 +148,11 @@ function Admin() {
       </div>
 
       {activeTab === 'youtube' && <YouTubeAuto />}
-      {activeTab === 'chat' && <AdminChat />}
+      {activeTab === 'chat' && (
+        <div style={{ margin: '-1.5rem -12px 0', height: 'calc(100vh - 160px)', minHeight: '500px' }}>
+          <AdminChat />
+        </div>
+      )}
 
       {activeTab === 'tutorials' && (
         <Row>
