@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Form, Button, Table, Alert, Modal, Card } from 'react-bootstrap'
-import { FaEdit, FaTrash, FaLock, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaLink, FaImage, FaYoutube } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaPlus, FaSignOutAlt, FaEye, FaEyeSlash, FaSave, FaTimes, FaVideo, FaTag, FaCalendarAlt, FaLink, FaImage, FaYoutube } from 'react-icons/fa'
 import { database } from '../firebase'
 import { ref, push, set, remove, onValue } from 'firebase/database'
 import YouTubeAuto from './YouTubeAuto'
 import AdminChat from './AdminChat'
+import AdminLogin from './AdminLogin'
 
 function Admin() {
-  const ADMIN_PASSWORD = '09195911297'
-
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
   const [tutorials, setTutorials] = useState([])
   const [editingId, setEditingId] = useState(null)
   const [showSuccess, setShowSuccess] = useState('')
@@ -39,17 +35,6 @@ function Admin() {
       }
     })
   }, [])
-
-  const handleLogin = (e) => {
-    e.preventDefault()
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      setError('')
-      setPassword('')
-    } else {
-      setError('❌ Incorrect password!')
-    }
-  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -105,49 +90,9 @@ function Admin() {
     t.category?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // Login form
+  // ===== SHOW LOGIN IF NOT AUTHENTICATED =====
   if (!isAuthenticated) {
-    return (
-      <Container fluid className="admin-login-container">
-        <Row className="justify-content-center align-items-center min-vh-100">
-          <Col md={5} lg={4}>
-            <Card className="admin-login-card border-0 shadow-lg">
-              <Card.Body className="p-5">
-                <div className="text-center mb-4">
-                  <div className="login-icon-wrapper mb-3">
-                    <FaLock size={40} className="text-danger" />
-                  </div>
-                  <h2 className="fw-bold mb-1">PMC GAMING</h2>
-                  <p className="text-muted">Admin Login</p>
-                </div>
-                {error && <Alert variant="danger">{error}</Alert>}
-                <Form onSubmit={handleLogin}>
-                  <Form.Group className="mb-4">
-                    <Form.Label className="fw-bold">Password</Form.Label>
-                    <div className="password-input-wrapper">
-                      <Form.Control
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter admin password"
-                        className="password-input"
-                        required autoFocus
-                      />
-                      <Button variant="link" className="password-toggle" onClick={() => setShowPassword(!showPassword)} type="button">
-                        {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
-                      </Button>
-                    </div>
-                  </Form.Group>
-                  <Button type="submit" variant="danger" className="w-100 py-2 fw-bold" size="lg">
-                    <FaLock className="me-2" /> Login
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    )
+    return <AdminLogin onSuccess={() => setIsAuthenticated(true)} />
   }
 
   return (
@@ -172,7 +117,11 @@ function Admin() {
         <Row className="align-items-center">
           <Col><h2 className="mb-0"><span className="text-danger">⚡</span> PMC GAMING Admin</h2></Col>
           <Col className="text-end">
-            <Button variant="outline-danger" onClick={() => setIsAuthenticated(false)} className="px-4">
+            <Button variant="outline-danger" onClick={() => {
+              setIsAuthenticated(false)
+              sessionStorage.removeItem('pmc_attempts')
+              sessionStorage.removeItem('pmc_lockout')
+            }} className="px-4">
               <FaSignOutAlt className="me-2" /> Logout
             </Button>
           </Col>
@@ -185,7 +134,7 @@ function Admin() {
         </Alert>
       )}
 
-      {/* ===== TABS ===== */}
+      {/* TABS */}
       <div className="admin-tabs mb-4">
         <Button variant={activeTab === 'tutorials' ? 'danger' : 'outline-danger'} onClick={() => setActiveTab('tutorials')}>
           📚 Tutorials
@@ -198,16 +147,11 @@ function Admin() {
         </Button>
       </div>
 
-      {/* YouTube Tab */}
       {activeTab === 'youtube' && <YouTubeAuto />}
-
-      {/* Chat Tab */}
       {activeTab === 'chat' && <AdminChat />}
 
-      {/* Tutorials Tab */}
       {activeTab === 'tutorials' && (
         <Row>
-          {/* Form */}
           <Col lg={5} className="mb-4">
             <Card className="admin-form-card border-0 shadow-sm">
               <Card.Header className="bg-danger text-white py-3">
@@ -266,7 +210,6 @@ function Admin() {
             </Card>
           </Col>
 
-          {/* Table */}
           <Col lg={7}>
             <Card className="admin-table-card border-0 shadow-sm">
               <Card.Header className="bg-dark text-white py-3">

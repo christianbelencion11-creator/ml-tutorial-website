@@ -1363,3 +1363,311 @@ body {
   .ac-sidebar { width: 100%; height: 220px; }
   .ac-main { height: 400px; }
 }
+
+/* ===== ADMIN LOGIN - TACTICAL SECURITY TERMINAL ===== */
+.al-root {
+  position: fixed; inset: 0;
+  background: #000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden; z-index: 9000;
+  font-family: 'Courier New', monospace;
+}
+
+/* Animated grid */
+.al-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,0,0,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: alGridMove 20s linear infinite;
+}
+@keyframes alGridMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(40px); }
+}
+
+/* Scanlines */
+.al-scanlines {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
+  animation: alScanMove 8s linear infinite;
+}
+@keyframes alScanMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
+}
+
+/* Particles */
+.al-particle {
+  position: absolute; border-radius: 50%;
+  background: #ff0000; opacity: 0.3;
+  animation: alFloat linear infinite;
+}
+@keyframes alFloat {
+  0% { transform: translateY(0) scale(1); opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { transform: translateY(-80px) scale(0.5); opacity: 0; }
+}
+
+/* Corner decorations */
+.al-corner {
+  position: absolute; width: 40px; height: 40px;
+  border-color: #ff0000; border-style: solid; opacity: 0.6;
+}
+.al-corner-tl { top: 20px; left: 20px; border-width: 2px 0 0 2px; }
+.al-corner-tr { top: 20px; right: 20px; border-width: 2px 2px 0 0; }
+.al-corner-bl { bottom: 20px; left: 20px; border-width: 0 0 2px 2px; }
+.al-corner-br { bottom: 20px; right: 20px; border-width: 0 2px 2px 0; }
+
+/* Main panel */
+.al-panel {
+  position: relative; z-index: 2;
+  width: 100%; max-width: 420px;
+  background: #080808;
+  border: 1px solid #ff0000;
+  box-shadow: 0 0 60px rgba(255,0,0,0.3), inset 0 0 60px rgba(255,0,0,0.02);
+  animation: alPanelIn 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  margin: 0 16px;
+}
+@keyframes alPanelIn {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.al-shake {
+  animation: alShake 0.5s cubic-bezier(0.36,0.07,0.19,0.97) !important;
+}
+@keyframes alShake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
+
+.al-glitch {
+  animation: alGlitch 0.4s steps(2) !important;
+}
+@keyframes alGlitch {
+  0% { transform: translateX(0); filter: none; }
+  25% { transform: translateX(-3px); filter: hue-rotate(90deg); }
+  50% { transform: translateX(3px); filter: hue-rotate(-90deg) brightness(1.5); }
+  75% { transform: translateX(-2px); filter: none; }
+  100% { transform: translateX(0); }
+}
+
+/* Top bar */
+.al-topbar {
+  display: flex; align-items: center; gap: 6px;
+  background: #0d0d0d; padding: 8px 14px;
+  border-bottom: 1px solid #1a0000;
+  font-size: 0.65rem; letter-spacing: 1px;
+}
+.al-topbar-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.al-topbar-dot.red { background: #ff4444; }
+.al-topbar-dot.yellow { background: #ffaa00; }
+.al-topbar-dot.green { background: #22c55e; }
+.al-topbar-label {
+  flex: 1; color: #333; margin-left: 4px; font-size: 0.7rem;
+}
+.al-topbar-status { color: #555; font-size: 0.65rem; }
+
+/* Shield */
+.al-shield-wrap {
+  position: relative; width: 90px; height: 90px;
+  margin: 28px auto 0; display: flex; align-items: center; justify-content: center;
+}
+.al-shield-ring {
+  position: absolute; border-radius: 50%; border: 1px solid rgba(255,0,0,0.3);
+  animation: alRingPulse 3s ease-in-out infinite;
+}
+.al-ring-1 { inset: 0; animation-delay: 0s; }
+.al-ring-2 { inset: -10px; animation-delay: 0.5s; border-color: rgba(255,0,0,0.2); }
+.al-ring-3 { inset: -20px; animation-delay: 1s; border-color: rgba(255,0,0,0.1); }
+@keyframes alRingPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+.al-shield-icon {
+  width: 70px; height: 70px; border-radius: 50%;
+  background: #0d0d0d; border: 2px solid #ff0000;
+  display: flex; align-items: center; justify-content: center;
+  color: #ff0000; position: relative; z-index: 1;
+  box-shadow: 0 0 20px rgba(255,0,0,0.4);
+}
+.al-scanning .al-shield-icon {
+  animation: alScanPulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes alScanPulse {
+  from { box-shadow: 0 0 10px rgba(255,0,0,0.4); }
+  to { box-shadow: 0 0 40px rgba(255,0,0,0.9); border-color: #ff6600; }
+}
+
+/* Title */
+.al-title { text-align: center; padding: 16px 20px 0; }
+.al-title-main {
+  font-size: 1.6rem; font-weight: 900; color: #fff;
+  letter-spacing: 4px; text-shadow: 0 0 20px rgba(255,0,0,0.5);
+}
+.al-title-sub {
+  font-size: 0.7rem; color: #ff0000; letter-spacing: 3px;
+  margin-top: 4px; animation: alTitleGlow 2s infinite;
+}
+@keyframes alTitleGlow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; text-shadow: 0 0 10px #ff0000; }
+}
+
+/* Warning bar */
+.al-warning-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin: 14px 20px 0;
+  background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.3);
+  padding: 7px 12px; font-size: 0.68rem; color: #ffaa00; letter-spacing: 1px;
+}
+
+/* Form */
+.al-form { padding: 20px; }
+
+.al-field-label {
+  font-size: 0.65rem; color: #ff0000; letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+
+.al-input-wrap {
+  display: flex; align-items: center;
+  background: #0d0d0d; border: 1px solid #ff0000;
+  transition: box-shadow 0.2s;
+}
+.al-input-wrap:focus-within {
+  box-shadow: 0 0 20px rgba(255,0,0,0.3);
+  border-color: #ff3300;
+}
+.al-input-prefix {
+  padding: 0 12px; color: #ff0000; font-size: 0.8rem; flex-shrink: 0;
+}
+.al-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: #fff; padding: 12px 8px; font-family: 'Courier New', monospace;
+  font-size: 0.9rem; letter-spacing: 2px;
+}
+.al-input::placeholder { color: #2a2a2a; letter-spacing: 1px; font-size: 0.8rem; }
+.al-input:disabled { opacity: 0.5; }
+.al-eye-btn {
+  background: transparent; border: none; color: #444;
+  padding: 12px; cursor: pointer; transition: color 0.2s; flex-shrink: 0;
+}
+.al-eye-btn:hover { color: #ff0000; }
+
+/* Attempt dots */
+.al-attempt-dots {
+  display: flex; align-items: center; gap: 8px; margin-top: 12px;
+}
+.al-dot {
+  width: 10px; height: 10px; border-radius: 50%; transition: all 0.3s;
+}
+.al-dot-free { background: #1a1a1a; border: 1px solid #333; }
+.al-dot-used { background: #ff0000; box-shadow: 0 0 8px rgba(255,0,0,0.6); }
+.al-dot-label {
+  font-size: 0.62rem; color: #333; letter-spacing: 2px; margin-left: 4px;
+}
+
+/* Scan status */
+.al-scan-status {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 14px; padding: 10px 14px;
+  font-size: 0.72rem; letter-spacing: 2px; border-left: 3px solid;
+  animation: alStatusIn 0.3s ease;
+}
+@keyframes alStatusIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.al-status-scan { background: rgba(255,170,0,0.06); border-color: #ffaa00; color: #ffaa00; }
+.al-status-ok { background: rgba(34,197,94,0.08); border-color: #22c55e; color: #22c55e; }
+.al-status-fail { background: rgba(255,0,0,0.08); border-color: #ff0000; color: #ff4444; }
+.al-status-cursor {
+  width: 6px; height: 14px; background: currentColor; display: inline-block;
+  animation: alBlink 0.8s step-end infinite; flex-shrink: 0;
+}
+@keyframes alBlink { 50% { opacity: 0; } }
+
+/* Submit button */
+.al-submit-btn {
+  width: 100%; margin-top: 20px; padding: 14px;
+  background: #ff0000; border: none; color: #000;
+  font-family: 'Courier New', monospace; font-size: 0.95rem;
+  font-weight: 900; letter-spacing: 3px; cursor: pointer;
+  transition: all 0.2s; position: relative; overflow: hidden;
+}
+.al-submit-btn::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.4s;
+}
+.al-submit-btn:hover::before { left: 100%; }
+.al-submit-btn:hover:not(:disabled) {
+  background: #cc0000; box-shadow: 0 0 30px rgba(255,0,0,0.6);
+  transform: translateY(-1px);
+}
+.al-submit-btn:disabled { background: #2a0000; color: #550000; cursor: not-allowed; }
+
+.al-btn-scanning { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.al-spinner {
+  width: 14px; height: 14px; border: 2px solid #550000;
+  border-top-color: #ff0000; border-radius: 50%;
+  animation: alSpin 0.6s linear infinite; display: inline-block;
+}
+@keyframes alSpin { to { transform: rotate(360deg); } }
+
+.al-footer-text {
+  text-align: center; font-size: 0.58rem; color: #1e1e1e;
+  letter-spacing: 1px; margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid #0d0d0d;
+}
+
+/* Lockout */
+.al-lockout { padding: 28px 20px; text-align: center; }
+.al-lockout-icon { color: #ff0000; margin-bottom: 16px; animation: alSkullPulse 1s ease-in-out infinite; }
+@keyframes alSkullPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+.al-lockout-title {
+  font-size: 1.3rem; font-weight: 900; color: #ff0000;
+  letter-spacing: 4px; margin-bottom: 4px;
+}
+.al-lockout-text { font-size: 0.72rem; color: #555; letter-spacing: 2px; margin-bottom: 24px; }
+.al-lockout-timer {
+  display: flex; flex-direction: column; align-items: center;
+  background: #0d0d0d; border: 1px solid #ff0000; padding: 16px;
+  margin-bottom: 16px;
+}
+.al-timer-label { font-size: 0.62rem; color: #555; letter-spacing: 3px; margin-bottom: 8px; }
+.al-timer-count {
+  font-size: 2.5rem; font-weight: 900; color: #ff0000;
+  font-variant-numeric: tabular-nums; letter-spacing: 4px;
+  text-shadow: 0 0 20px rgba(255,0,0,0.5);
+  animation: alTimerPulse 1s ease-in-out infinite;
+}
+@keyframes alTimerPulse {
+  0%, 100% { text-shadow: 0 0 10px rgba(255,0,0,0.4); }
+  50% { text-shadow: 0 0 30px rgba(255,0,0,0.9); }
+}
+.al-lockout-sub { font-size: 0.65rem; color: #333; letter-spacing: 2px; }
+
+/* Status bar */
+.al-statusbar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #0a0000; border-top: 1px solid #1a0000;
+  display: flex; justify-content: center; gap: 32px;
+  padding: 6px 20px; font-size: 0.62rem;
+  color: #333; letter-spacing: 2px; z-index: 3;
+}
+.al-blink { color: #22c55e; animation: alBlink 1.5s step-end infinite; }
