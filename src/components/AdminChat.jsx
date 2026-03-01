@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { database } from '../firebase'
 import { ref, onValue, push, set, remove } from 'firebase/database'
-import { FaCommentDots, FaPaperPlane, FaUser, FaCircle, FaInbox, FaTrash } from 'react-icons/fa'
+import { FaCommentDots, FaPaperPlane, FaUser, FaCircle, FaInbox, FaTrash, FaCheckCircle } from 'react-icons/fa'
 
 function AdminChat() {
   const [conversations, setConversations] = useState([])
@@ -48,7 +48,7 @@ function AdminChat() {
     return () => unsubscribe()
   }, [selectedUserId])
 
-  // ✅ SCROLL FIX - only scrolls inside messages div, not the whole page
+  // ✅ SCROLL FIX - block: nearest para hindi mag-scroll ang buong page
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -78,13 +78,6 @@ function AdminChat() {
     setSending(false)
   }
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendReply()
-    }
-  }
-
   const deleteConversation = async (userId) => {
     if (!confirm('Delete this conversation?')) return
     await remove(ref(database, `chats/${userId}`))
@@ -104,50 +97,47 @@ function AdminChat() {
   }
 
   const selectedConvo = conversations.find(c => c.userId === selectedUserId)
+  const totalUnread = conversations.filter(c => c.unreadByAdmin).length
 
   return (
-    <div className="admin-chat-container">
+    <div className="ac-container">
 
-      {/* Sidebar */}
-      <div className="admin-chat-sidebar">
-        <div className="admin-chat-sidebar-header">
-          <FaInbox className="me-2" /> CONVERSATIONS
-          {conversations.filter(c => c.unreadByAdmin).length > 0 && (
-            <span className="admin-chat-unread-total">
-              {conversations.filter(c => c.unreadByAdmin).length}
-            </span>
-          )}
+      {/* ===== SIDEBAR ===== */}
+      <div className="ac-sidebar">
+        <div className="ac-sidebar-header">
+          <div className="ac-sidebar-title">
+            <FaInbox size={12} /> CONVERSATIONS
+            {totalUnread > 0 && <span className="ac-badge-count">{totalUnread}</span>}
+          </div>
         </div>
 
         {conversations.length === 0 ? (
-          <div className="admin-chat-empty-sidebar">
-            <FaCommentDots size={28} style={{ color: '#333', marginBottom: '8px' }} />
+          <div className="ac-sidebar-empty">
+            <FaCommentDots size={28} style={{ marginBottom: '8px' }} />
             <p>No conversations yet</p>
           </div>
         ) : (
-          <div className="admin-chat-list">
+          <div className="ac-convo-list">
             {conversations.map(convo => (
               <div
                 key={convo.userId}
-                className={`admin-chat-item ${selectedUserId === convo.userId ? 'active' : ''}`}
+                className={`ac-convo-item ${selectedUserId === convo.userId ? 'active' : ''}`}
                 onClick={() => setSelectedUserId(convo.userId)}
               >
-                <div className="admin-chat-item-avatar"><FaUser size={14} /></div>
-                <div className="admin-chat-item-info">
-                  <div className="admin-chat-item-name">
+                <div className="ac-convo-avatar"><FaUser size={12} /></div>
+                <div className="ac-convo-info">
+                  <div className="ac-convo-name">
                     {convo.userName || 'Unknown Player'}
-                    {convo.unreadByAdmin && <FaCircle className="admin-unread-dot" />}
+                    {convo.unreadByAdmin && <FaCircle className="ac-unread-dot" />}
                   </div>
-                  <div className="admin-chat-item-preview">
-                    {convo.lastMessage || 'No messages yet'}
-                  </div>
+                  <div className="ac-convo-preview">{convo.lastMessage || 'No messages'}</div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
-                  <div className="admin-chat-item-time">{formatTime(convo.lastMessageTime)}</div>
+                <div className="ac-convo-meta">
+                  <div className="ac-convo-time">{formatTime(convo.lastMessageTime)}</div>
                   <button
+                    className="ac-delete-btn"
                     onClick={(e) => { e.stopPropagation(); deleteConversation(convo.userId) }}
-                    style={{ background: 'transparent', border: 'none', color: '#333', cursor: 'pointer', padding: '2px', fontSize: '0.7rem' }}
-                    title="Delete conversation"
+                    title="Delete"
                   >
                     <FaTrash size={10} />
                   </button>
@@ -158,48 +148,61 @@ function AdminChat() {
         )}
       </div>
 
-      {/* Main chat area */}
-      <div className="admin-chat-main">
+      {/* ===== MAIN CHAT ===== */}
+      <div className="ac-main">
         {!selectedUserId ? (
-          <div className="admin-chat-placeholder">
-            <FaCommentDots size={40} style={{ color: '#222', marginBottom: '12px' }} />
-            <p>Select a conversation to start replying</p>
+          <div className="ac-placeholder">
+            <FaCommentDots size={38} style={{ marginBottom: '12px' }} />
+            <p>Select a conversation</p>
+            <small style={{ color: '#1e1e1e', fontSize: '0.75rem', marginTop: '4px' }}>to start replying</small>
           </div>
         ) : (
           <>
-            {/* Chat header */}
-            <div className="admin-chat-main-header">
-              <div className="admin-chat-user-avatar"><FaUser size={16} /></div>
-              <div>
-                <div className="admin-chat-user-name">{selectedConvo?.userName || 'Unknown'}</div>
-                <div className="admin-chat-user-meta">
-                  {selectedConvo?.page && `Viewing: ${selectedConvo.page}`}
+            {/* Chat Header */}
+            <div className="ac-chat-header">
+              <div className="ac-chat-avatar"><FaUser size={15} /></div>
+              <div className="ac-chat-info">
+                <div className="ac-chat-name">{selectedConvo?.userName || 'Unknown'}</div>
+                <div className="ac-chat-meta">
+                  {selectedConvo?.page ? `Viewing: ${selectedConvo.page}` : 'PMC Gaming Chat'}
                 </div>
               </div>
-              <button
-                onClick={() => deleteConversation(selectedUserId)}
-                style={{ marginLeft: 'auto', background: 'transparent', border: '1px solid #1e1e1e', color: '#555', borderRadius: '6px', padding: '5px 12px', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '5px' }}
-              >
-                ✓ Resolve
-              </button>
+              <div className="ac-chat-header-actions">
+                <button
+                  className="ac-resolve-btn"
+                  onClick={() => deleteConversation(selectedUserId)}
+                >
+                  <FaCheckCircle size={12} /> Resolve
+                </button>
+              </div>
             </div>
 
             {/* Messages */}
-            <div className="admin-chat-messages">
+            <div className="ac-messages">
+              {messages.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#2a2a2a', fontSize: '0.8rem', marginTop: '20px' }}>
+                  No messages yet
+                </div>
+              )}
               {messages.map((msg) => (
-                <div key={msg.id} className={`admin-msg-wrap ${msg.sender === 'admin' ? 'admin-msg-right' : 'admin-msg-left'}`}>
-                  {msg.sender === 'user' && <div className="admin-msg-label">{msg.userName}</div>}
-                  <div className={`admin-msg-bubble ${msg.sender === 'admin' ? 'admin-msg-bubble-admin' : 'admin-msg-bubble-user'}`}>
+                <div
+                  key={msg.id}
+                  className={`ac-msg-wrap ${msg.sender === 'admin' ? 'ac-msg-right' : 'ac-msg-left'}`}
+                >
+                  {msg.sender === 'user' && (
+                    <div className="ac-msg-label">{msg.userName}</div>
+                  )}
+                  <div className={`ac-bubble ${msg.sender === 'admin' ? 'ac-bubble-admin' : 'ac-bubble-user'}`}>
                     {msg.type === 'image' && msg.imageUrl ? (
                       <img
                         src={msg.imageUrl}
                         alt="uploaded"
-                        style={{ maxWidth: '180px', maxHeight: '180px', borderRadius: '8px', cursor: 'pointer', display: 'block' }}
+                        className="ac-img-preview"
                         onClick={() => window.open(msg.imageUrl, '_blank')}
                       />
                     ) : msg.text}
                   </div>
-                  <div className={`admin-msg-time ${msg.sender === 'admin' ? 'text-end' : ''}`}>
+                  <div className={`ac-time ${msg.sender === 'admin' ? 'ac-time-right' : ''}`}>
                     {formatTime(msg.timestamp)}
                   </div>
                 </div>
@@ -207,24 +210,29 @@ function AdminChat() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Reply input */}
-            <div className="admin-chat-input-area">
+            {/* Input */}
+            <div className="ac-input-area">
               <input
                 ref={inputRef}
                 type="text"
-                className="admin-chat-input"
+                className="ac-input"
                 placeholder={`Reply to ${selectedConvo?.userName || 'user'}...`}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                onKeyDown={handleKeyDown}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    sendReply()
+                  }
+                }}
                 maxLength={500}
               />
               <button
-                className="admin-chat-send-btn"
+                className="ac-send-btn"
                 onClick={sendReply}
                 disabled={!replyText.trim() || sending}
               >
-                <FaPaperPlane size={14} /> Send
+                <FaPaperPlane size={13} /> Send
               </button>
             </div>
           </>
