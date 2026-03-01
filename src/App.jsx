@@ -10,6 +10,7 @@ import About from './components/About'
 import Contact from './components/Contact'
 import Admin from './components/Admin'
 import TutorialDetail from './components/TutorialDetail'
+import ChatWidget from './components/ChatWidget'
 
 function AppContent() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -102,8 +103,6 @@ function AppContent() {
         <Container>
           <div className="footer-top">
             <Row>
-
-              {/* Brand + Description */}
               <Col lg={4} md={6} className="mb-4 mb-lg-0">
                 <div className="footer-brand">
                   <img
@@ -119,7 +118,6 @@ function AppContent() {
                 <p className="footer-desc">
                   Your go-to source for Mobile Legends Bang Bang tutorials, hero guides, and pro strategies. Level up your game with PMC Gaming.
                 </p>
-                {/* Social Links */}
                 <div className="footer-social">
                   <a href="https://www.youtube.com/@PMCGaming8" target="_blank" rel="noopener noreferrer" className="footer-social-btn" title="YouTube">
                     <FaYoutube />
@@ -133,7 +131,6 @@ function AppContent() {
                 </div>
               </Col>
 
-              {/* Quick Links */}
               <Col lg={2} md={6} sm={6} className="mb-4 mb-lg-0">
                 <h6 className="footer-heading">QUICK LINKS</h6>
                 <ul className="footer-links">
@@ -144,7 +141,6 @@ function AppContent() {
                 </ul>
               </Col>
 
-              {/* Categories */}
               <Col lg={3} md={6} sm={6} className="mb-4 mb-lg-0">
                 <h6 className="footer-heading">CATEGORIES</h6>
                 <ul className="footer-links">
@@ -156,7 +152,6 @@ function AppContent() {
                 </ul>
               </Col>
 
-              {/* Contact Info */}
               <Col lg={3} md={6}>
                 <h6 className="footer-heading">CONTACT US</h6>
                 <div className="footer-contact-item">
@@ -172,11 +167,9 @@ function AppContent() {
                   <span>Philippines</span>
                 </div>
               </Col>
-
             </Row>
           </div>
 
-          {/* Footer Bottom */}
           <div className="footer-bottom">
             <p className="footer-copyright">
               © 2026 <span>PMC GAMING TUTORIALS</span>. All rights reserved.
@@ -185,6 +178,9 @@ function AppContent() {
           </div>
         </Container>
       </footer>
+
+      {/* ✅ CHAT WIDGET - 2 lines lang ang bago dito */}
+      <ChatWidget />
     </div>
   )
 }
