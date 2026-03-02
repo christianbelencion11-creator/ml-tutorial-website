@@ -23,7 +23,7 @@ function ChatWidget() {
   const [inputText, setInputText] = useState('')
   const [sending, setSending] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
-  const [lastSeenTimestamp] = useState(parseInt(localStorage.getItem('pmc_last_seen') || '0'))
+  const [lastSeenTimestamp, setLastSeenTimestamp] = useState(parseInt(localStorage.getItem('pmc_last_seen') || '0'))
   const [uploadingImage, setUploadingImage] = useState(false)
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [ended, setEnded] = useState(false)
@@ -112,14 +112,17 @@ function ChatWidget() {
         const msgs = Object.entries(data).map(([key, val]) => ({ id: key, ...val }))
           .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
         setMessages(msgs)
-        if (!isOpen) {
-          const unread = msgs.filter(m => m.sender === 'admin' && (m.timestamp || 0) > lastSeenTimestamp).length
-          setUnreadCount(unread)
-        }
-      } else { setMessages([]) }
+        // Always recalculate — read fresh from localStorage every time
+        const seen = parseInt(localStorage.getItem('pmc_last_seen') || '0')
+        const unread = msgs.filter(m => m.sender === 'admin' && (m.timestamp || 0) > seen).length
+        setUnreadCount(unread)
+      } else {
+        setMessages([])
+        setUnreadCount(0)
+      }
     })
     return () => unsubscribe()
-  }, [userId, isOpen, lastSeenTimestamp])
+  }, [userId])
 
   const messagesContainerRef = useRef(null)
   useEffect(() => {
@@ -130,8 +133,18 @@ function ChatWidget() {
 
   useEffect(() => {
     if (isOpen) {
-      const now = Date.now()
-      localStorage.setItem('pmc_last_seen', now.toString())
+      // Use the timestamp of the latest admin message, not current time
+      // This avoids clock skew issues where future messages still show badge
+      setMessages(prev => {
+        const adminMsgs = prev.filter(m => m.sender === 'admin')
+        const latestTs = adminMsgs.length > 0
+          ? Math.max(...adminMsgs.map(m => m.timestamp || 0))
+          : Date.now()
+        const saveTs = Math.max(latestTs, Date.now())
+        localStorage.setItem('pmc_last_seen', saveTs.toString())
+        setLastSeenTimestamp(saveTs)
+        return prev
+      })
       setUnreadCount(0)
       inputRef.current?.focus()
       set(ref(database, `chats/${userId}/info`), {

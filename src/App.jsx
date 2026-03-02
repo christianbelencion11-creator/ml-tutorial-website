@@ -1,7 +1,7 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Container, Navbar, Nav, Row, Col } from 'react-bootstrap'
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import { FaGamepad, FaFire, FaMedal, FaUserShield, FaCommentDots, FaYoutube, FaFacebook, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
 import Home from './components/Home'
@@ -11,8 +11,10 @@ import Contact from './components/Contact'
 import Admin from './components/Admin'
 import TutorialDetail from './components/TutorialDetail'
 import ChatWidget from './components/ChatWidget'
+import ConvoPage from './components/ConvoPage'
 
 function AppContent() {
+  const location = useLocation()
   const [searchTerm, setSearchTerm] = useState('')
   const [navExpanded, setNavExpanded] = useState(false)
   const navigate = useNavigate()
@@ -95,6 +97,7 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/chat" element={<ConvoPage />} />
         </Routes>
       </Container>
 
@@ -179,8 +182,8 @@ function AppContent() {
         </Container>
       </footer>
 
-      {/* ✅ CHAT WIDGET - 2 lines lang ang bago dito */}
-      <ChatWidget />
+      {/* Hide chat widget on admin and dedicated chat page */}
+      {!['/admin', '/chat'].includes(location.pathname) && <ChatWidget />}
     </div>
   )
 }
