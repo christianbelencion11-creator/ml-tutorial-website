@@ -186,7 +186,7 @@ function Home({ searchTerm, setSearchTerm }) {
           </div>
         </div>
 
-        {/* MLBB LIVE FEED */}
+        {/* MLBB NEWS FEED - auto loads from RSS, no storage needed */}
         <MLBBFeed />
 
       </Container>
