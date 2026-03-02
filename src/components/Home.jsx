@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Container, Row, Col } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaUsers, FaVideo, FaTrophy, FaGamepad, FaFire, FaCrown, FaYoutube } from 'react-icons/fa'
+import MLBBFeed from './MLBBFeed'
 
 const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY
 const CHANNEL_ID = import.meta.env.VITE_YOUTUBE_CHANNEL_ID
@@ -184,6 +185,9 @@ function Home({ searchTerm, setSearchTerm }) {
             </div>
           </div>
         </div>
+
+        {/* MLBB LIVE FEED */}
+        <MLBBFeed />
 
       </Container>
     </Container>
