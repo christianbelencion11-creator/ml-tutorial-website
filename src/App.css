@@ -1992,3 +1992,71 @@ body {
   .cp-msg-content { max-width: 80%; }
   .cp-img { max-width: 180px; max-height: 180px; }
 }
+
+/* ===== NOTIFICATION BELL ===== */
+.pmc-bell-btn {
+  background: transparent;
+  border: 2px solid #ff0000;
+  color: #ffffff;
+  padding: 7px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: 4px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+  position: relative;
+}
+.pmc-bell-btn:hover {
+  background: #ff0000;
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(255,0,0,0.5);
+}
+.bell-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.bell-icon {
+  font-size: 1.1rem;
+  color: #ff0000;
+  transition: color 0.3s;
+}
+.pmc-bell-btn:hover .bell-icon { color: #000; }
+.bell-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: #ff0000;
+  color: #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #000;
+  animation: bellBadgePop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.pmc-bell-btn:hover .bell-badge { background: #000; color: #ff0000; border-color: #ff0000; }
+.bell-label { font-size: 0.8rem; font-weight: 900; letter-spacing: 1px; }
+.bell-ring { animation: bellRing 0.6s ease-in-out; }
+@keyframes bellRing {
+  0%,100% { transform: rotate(0); }
+  15% { transform: rotate(15deg); }
+  30% { transform: rotate(-15deg); }
+  45% { transform: rotate(10deg); }
+  60% { transform: rotate(-10deg); }
+  75% { transform: rotate(5deg); }
+  90% { transform: rotate(-5deg); }
+}
+@keyframes bellBadgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}

@@ -2,8 +2,8 @@ import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Container, Navbar, Nav, Row, Col } from 'react-bootstrap'
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
-import { useState } from 'react'
-import { FaGamepad, FaFire, FaMedal, FaUserShield, FaCommentDots, FaYoutube, FaFacebook, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
+import { useState, useEffect } from 'react'
+import { FaGamepad, FaFire, FaMedal, FaCommentDots, FaYoutube, FaFacebook, FaEnvelope, FaMapMarkerAlt, FaBell } from 'react-icons/fa'
 import Home from './components/Home'
 import Tutorials from './components/Tutorials'
 import About from './components/About'
@@ -12,12 +12,43 @@ import Admin from './components/Admin'
 import TutorialDetail from './components/TutorialDetail'
 import ChatWidget from './components/ChatWidget'
 import ConvoPage from './components/ConvoPage'
+import { database } from './firebase'
+import { ref, onValue } from 'firebase/database'
 
 function AppContent() {
   const location = useLocation()
   const [searchTerm, setSearchTerm] = useState('')
   const [navExpanded, setNavExpanded] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [bellAnimate, setBellAnimate] = useState(false)
   const navigate = useNavigate()
+
+  // Listen for new tutorials added in last 7 days
+  useEffect(() => {
+    const tutorialsRef = ref(database, 'tutorials/')
+    const unsubscribe = onValue(tutorialsRef, (snapshot) => {
+      const data = snapshot.val()
+      if (!data) return
+      const lastSeen = parseInt(localStorage.getItem('pmc_last_seen_tutorials') || '0')
+      const newCount = Object.values(data).filter(t => {
+        const dateMs = new Date(t.date || t.importDate || 0).getTime()
+        return dateMs > lastSeen
+      }).length
+      setUnreadCount(newCount)
+      if (newCount > 0) {
+        setBellAnimate(true)
+        setTimeout(() => setBellAnimate(false), 1000)
+      }
+    })
+    return () => unsubscribe()
+  }, [])
+
+  const handleBellClick = () => {
+    localStorage.setItem('pmc_last_seen_tutorials', Date.now().toString())
+    setUnreadCount(0)
+    navigate('/tutorials')
+    setNavExpanded(false)
+  }
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
@@ -80,10 +111,21 @@ function AppContent() {
                   className="pmc-search-input"
                 />
               </div>
-              <Nav.Link as={Link} to="/admin" className="pmc-admin-btn" onClick={handleNavClick}>
-                <FaUserShield className="admin-btn-icon" />
-                <span className="admin-btn-text">ADMIN</span>
-              </Nav.Link>
+
+              {/* 🔔 NOTIFICATION BELL — replaces admin button */}
+              <button
+                onClick={handleBellClick}
+                className="pmc-bell-btn"
+                title="New Tutorials"
+              >
+                <div className={`bell-icon-wrap ${bellAnimate ? 'bell-ring' : ''}`}>
+                  <FaBell className="bell-icon" />
+                  {unreadCount > 0 && (
+                    <span className="bell-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                  )}
+                </div>
+                <span className="bell-label">NEW</span>
+              </button>
             </div>
           </Navbar.Collapse>
         </Container>
@@ -101,7 +143,7 @@ function AppContent() {
         </Routes>
       </Container>
 
-      {/* ===== PROFESSIONAL FOOTER ===== */}
+      {/* FOOTER */}
       <footer className="pmc-footer">
         <Container>
           <div className="footer-top">
@@ -182,7 +224,6 @@ function AppContent() {
         </Container>
       </footer>
 
-      {/* Hide chat widget on admin and dedicated chat page */}
       {!['/admin', '/chat'].includes(location.pathname) && <ChatWidget />}
     </div>
   )
