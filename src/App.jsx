@@ -14,13 +14,25 @@ import ConvoPage from './components/ConvoPage'
 import { database } from './firebase'
 import { ref, onValue } from 'firebase/database'
 
+const DEFAULT_LOGO = 'https://scontent.fmnl30-3.fna.fbcdn.net/v/t39.30808-6/322707149_1841631216235507_1073256195438098560_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=jFDwVIaZtScQ7kNvwEg0lvg&_nc_oc=Adk2WMixZ9b4un2aRcg1Bo7K3kaMNJmIMV4wqchF5p9rIqekrgK3isNqlqtt2O49QrE&_nc_zt=23&_nc_ht=scontent.fmnl30-3.fna&_nc_gid=27SX6zTygGpOBStnP2yJgA&oh=00_AftJl8UEOFcZHUI1yIMRP477cjCcJJ4nk6nKnaMx_a5n4A&oe=699B876C'
+
 function AppContent() {
   const location = useLocation()
   const [searchTerm, setSearchTerm] = useState('')
   const [navExpanded, setNavExpanded] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const [bellAnimate, setBellAnimate] = useState(false)
+  const [logoUrl, setLogoUrl] = useState(DEFAULT_LOGO)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const brandRef = ref(database, 'branding/logoUrl')
+    const unsubscribe = onValue(brandRef, (snapshot) => {
+      const url = snapshot.val()
+      if (url) setLogoUrl(url)
+    })
+    return () => unsubscribe()
+  }, [])
 
   useEffect(() => {
     const tutorialsRef = ref(database, 'tutorials/')
@@ -59,21 +71,10 @@ function AppContent() {
 
   return (
     <div className="App">
-      <Navbar
-        className="pmc-navbar"
-        expand="lg"
-        fixed="top"
-        variant="dark"
-        expanded={navExpanded}
-        onToggle={(expanded) => setNavExpanded(expanded)}
-      >
+      <Navbar className="pmc-navbar" expand="lg" fixed="top" variant="dark" expanded={navExpanded} onToggle={(expanded) => setNavExpanded(expanded)}>
         <Container>
           <Navbar.Brand as={Link} to="/" className="pmc-brand" onClick={handleNavClick}>
-            <img
-              src="https://scontent.fmnl30-3.fna.fbcdn.net/v/t39.30808-6/322707149_1841631216235507_1073256195438098560_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=jFDwVIaZtScQ7kNvwEg0lvg&_nc_oc=Adk2WMixZ9b4un2aRcg1Bo7K3kaMNJmIMV4wqchF5p9rIqekrgK3isNqlqtt2O49QrE&_nc_zt=23&_nc_ht=scontent.fmnl30-3.fna&_nc_gid=27SX6zTygGpOBStnP2yJgA&oh=00_AftJl8UEOFcZHUI1yIMRP477cjCcJJ4nk6nKnaMx_a5n4A&oe=699B876C"
-              alt="PMC Gaming Logo"
-              className="pmc-logo-img"
-            />
+            <img src={logoUrl} alt="PMC Gaming Logo" className="pmc-logo-img" onError={(e) => e.target.src = DEFAULT_LOGO} />
             <div className="brand-text-wrapper">
               <span className="brand-text">PMC GAMING</span>
               <span className="brand-tag">TUTORIALS</span>
@@ -84,42 +85,20 @@ function AppContent() {
 
           <Navbar.Collapse id="pmc-nav">
             <Nav className="mx-auto pmc-nav-links">
-              <Nav.Link as={Link} to="/" className="nav-item" onClick={handleNavClick}>
-                <FaFire className="nav-icon" /> HOME
-              </Nav.Link>
-              <Nav.Link as={Link} to="/tutorials" className="nav-item" onClick={handleNavClick}>
-                <FaGamepad className="nav-icon" /> TUTORIALS
-              </Nav.Link>
-              <Nav.Link as={Link} to="/about" className="nav-item" onClick={handleNavClick}>
-                <FaMedal className="nav-icon" /> ABOUT
-              </Nav.Link>
-              <Nav.Link as={Link} to="/contact" className="nav-item" onClick={handleNavClick}>
-                <FaCommentDots className="nav-icon" /> CONTACT
-              </Nav.Link>
+              <Nav.Link as={Link} to="/" className="nav-item" onClick={handleNavClick}><FaFire className="nav-icon" /> HOME</Nav.Link>
+              <Nav.Link as={Link} to="/tutorials" className="nav-item" onClick={handleNavClick}><FaGamepad className="nav-icon" /> TUTORIALS</Nav.Link>
+              <Nav.Link as={Link} to="/about" className="nav-item" onClick={handleNavClick}><FaMedal className="nav-icon" /> ABOUT</Nav.Link>
+              <Nav.Link as={Link} to="/contact" className="nav-item" onClick={handleNavClick}><FaCommentDots className="nav-icon" /> CONTACT</Nav.Link>
             </Nav>
 
             <div className="nav-right">
               <div className="pmc-search">
-                <input
-                  type="text"
-                  placeholder="SEARCH TUTORIALS..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  className="pmc-search-input"
-                />
+                <input type="text" placeholder="SEARCH TUTORIALS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={handleSearchKeyDown} className="pmc-search-input" />
               </div>
-
-              <button
-                onClick={handleBellClick}
-                className="pmc-bell-btn"
-                title="New Tutorials"
-              >
+              <button onClick={handleBellClick} className="pmc-bell-btn" title="New Tutorials">
                 <div className={`bell-icon-wrap ${bellAnimate ? 'bell-ring' : ''}`}>
                   <FaBell className="bell-icon" />
-                  {unreadCount > 0 && (
-                    <span className="bell-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
-                  )}
+                  {unreadCount > 0 && <span className="bell-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>}
                 </div>
                 <span className="bell-label">NEW</span>
               </button>
@@ -145,32 +124,19 @@ function AppContent() {
             <Row>
               <Col lg={4} md={6} className="mb-4 mb-lg-0">
                 <div className="footer-brand">
-                  <img
-                    src="https://scontent.fmnl30-3.fna.fbcdn.net/v/t39.30808-6/322707149_1841631216235507_1073256195438098560_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=jFDwVIaZtScQ7kNvwEg0lvg&_nc_oc=Adk2WMixZ9b4un2aRcg1Bo7K3kaMNJmIMV4wqchF5p9rIqekrgK3isNqlqtt2O49QrE&_nc_zt=23&_nc_ht=scontent.fmnl30-3.fna&_nc_gid=27SX6zTygGpOBStnP2yJgA&oh=00_AftJl8UEOFcZHUI1yIMRP477cjCcJJ4nk6nKnaMx_a5n4A&oe=699B876C"
-                    alt="PMC Gaming"
-                    className="footer-logo"
-                  />
+                  <img src={logoUrl} alt="PMC Gaming" className="footer-logo" onError={(e) => e.target.src = DEFAULT_LOGO} />
                   <div>
                     <div className="footer-brand-text">PMC GAMING</div>
                     <div className="footer-brand-tag">TUTORIALS</div>
                   </div>
                 </div>
-                <p className="footer-desc">
-                  Your go-to source for Mobile Legends Bang Bang tutorials, hero guides, and pro strategies. Level up your game with PMC Gaming.
-                </p>
+                <p className="footer-desc">Your go-to source for Mobile Legends Bang Bang tutorials, hero guides, and pro strategies. Level up your game with PMC Gaming.</p>
                 <div className="footer-social">
-                  <a href="https://www.youtube.com/@PMCGaming8" target="_blank" rel="noopener noreferrer" className="footer-social-btn" title="YouTube">
-                    <FaYoutube />
-                  </a>
-                  <a href="https://www.facebook.com/realpmcgaming" className="footer-social-btn" title="Facebook">
-                    <FaFacebook />
-                  </a>
-                  <a href="/contact" className="footer-social-btn" title="Contact">
-                    <FaEnvelope />
-                  </a>
+                  <a href="https://www.youtube.com/@PMCGaming8" target="_blank" rel="noopener noreferrer" className="footer-social-btn" title="YouTube"><FaYoutube /></a>
+                  <a href="https://www.facebook.com/realpmcgaming" className="footer-social-btn" title="Facebook"><FaFacebook /></a>
+                  <a href="/contact" className="footer-social-btn" title="Contact"><FaEnvelope /></a>
                 </div>
               </Col>
-
               <Col lg={2} md={6} sm={6} className="mb-4 mb-lg-0">
                 <h6 className="footer-heading">QUICK LINKS</h6>
                 <ul className="footer-links">
@@ -180,7 +146,6 @@ function AppContent() {
                   <li><Link to="/contact">Contact</Link></li>
                 </ul>
               </Col>
-
               <Col lg={3} md={6} sm={6} className="mb-4 mb-lg-0">
                 <h6 className="footer-heading">CATEGORIES</h6>
                 <ul className="footer-links">
@@ -191,29 +156,16 @@ function AppContent() {
                   <li><Link to="/tutorials">Tips & Tricks</Link></li>
                 </ul>
               </Col>
-
               <Col lg={3} md={6}>
                 <h6 className="footer-heading">CONTACT US</h6>
-                <div className="footer-contact-item">
-                  <FaYoutube className="footer-contact-icon" />
-                  <span>youtube.com/@PMCGaming8</span>
-                </div>
-                <div className="footer-contact-item">
-                  <FaEnvelope className="footer-contact-icon" />
-                  <span>pmcgamingp@gmail.com</span>
-                </div>
-                <div className="footer-contact-item">
-                  <FaMapMarkerAlt className="footer-contact-icon" />
-                  <span>Philippines</span>
-                </div>
+                <div className="footer-contact-item"><FaYoutube className="footer-contact-icon" /><span>youtube.com/@PMCGaming8</span></div>
+                <div className="footer-contact-item"><FaEnvelope className="footer-contact-icon" /><span>pmcgamingp@gmail.com</span></div>
+                <div className="footer-contact-item"><FaMapMarkerAlt className="footer-contact-icon" /><span>Philippines</span></div>
               </Col>
             </Row>
           </div>
-
           <div className="footer-bottom">
-            <p className="footer-copyright">
-              © 2026 <span>PMC GAMING TUTORIALS</span>. All rights reserved.
-            </p>
+            <p className="footer-copyright">© 2026 <span>PMC GAMING TUTORIALS</span>. All rights reserved.</p>
             <p className="footer-tag">⚔️ SAFEST TUTORIAL CHANNEL ⚔️</p>
           </div>
         </Container>
