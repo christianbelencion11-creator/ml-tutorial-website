@@ -3,18 +3,19 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import { Container, Navbar, Nav, Row, Col } from 'react-bootstrap'
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { FaGamepad, FaFire, FaMedal, FaCommentDots, FaYoutube, FaFacebook, FaEnvelope, FaMapMarkerAlt, FaBell } from 'react-icons/fa'
+import { FaGamepad, FaFire, FaMedal, FaCommentDots, FaYoutube, FaFacebook, FaEnvelope, FaMapMarkerAlt, FaBell, FaDownload } from 'react-icons/fa'
 import Home from './components/Home'
 import Tutorials from './components/Tutorials'
 import About from './components/About'
 import Contact from './components/Contact'
+import Downloads from './components/Downloads'
 import TutorialDetail from './components/TutorialDetail'
 import ChatWidget from './components/ChatWidget'
 import ConvoPage from './components/ConvoPage'
 import { database } from './firebase'
 import { ref, onValue } from 'firebase/database'
 
-const DEFAULT_LOGO = 'https://scontent.fmnl30-3.fna.fbcdn.net/v/t39.30808-6/322707149_1841631216235507_1073256195438098560_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=jFDwVIaZtScQ7kNvwEg0lvg&_nc_oc=Adk2WMixZ9b4un2aRcg1Bo7K3kaMNJmIMV4wqchF5p9rIqekrgK3isNqlqtt2O49QrE&_nc_zt=23&_nc_ht=scontent.fmnl30-3.fna&_nc_gid=27SX6zTygGpOBStnP2yJgA&oh=00_AftJl8UEOFcZHUI1yIMRP477cjCcJJ4nk6nKnaMx_a5n4A&oe=699B876C'
+const DEFAULT_LOGO = 'https://i.imgur.com/oxbFgu3.jpeg'
 
 function AppContent() {
   const location = useLocation()
@@ -87,6 +88,7 @@ function AppContent() {
             <Nav className="mx-auto pmc-nav-links">
               <Nav.Link as={Link} to="/" className="nav-item" onClick={handleNavClick}><FaFire className="nav-icon" /> HOME</Nav.Link>
               <Nav.Link as={Link} to="/tutorials" className="nav-item" onClick={handleNavClick}><FaGamepad className="nav-icon" /> TUTORIALS</Nav.Link>
+              <Nav.Link as={Link} to="/downloads" className="nav-item" onClick={handleNavClick}><FaDownload className="nav-icon" /> DOWNLOADS</Nav.Link>
               <Nav.Link as={Link} to="/about" className="nav-item" onClick={handleNavClick}><FaMedal className="nav-icon" /> ABOUT</Nav.Link>
               <Nav.Link as={Link} to="/contact" className="nav-item" onClick={handleNavClick}><FaCommentDots className="nav-icon" /> CONTACT</Nav.Link>
             </Nav>
@@ -112,6 +114,7 @@ function AppContent() {
           <Route path="/" element={<Home searchTerm={searchTerm} setSearchTerm={setSearchTerm} />} />
           <Route path="/tutorials" element={<Tutorials searchTerm={searchTerm} />} />
           <Route path="/tutorial/:id" element={<TutorialDetail />} />
+          <Route path="/downloads" element={<Downloads />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/chat" element={<ConvoPage />} />
@@ -142,6 +145,7 @@ function AppContent() {
                 <ul className="footer-links">
                   <li><Link to="/">Home</Link></li>
                   <li><Link to="/tutorials">Tutorials</Link></li>
+                  <li><Link to="/downloads">Downloads</Link></li>
                   <li><Link to="/about">About Us</Link></li>
                   <li><Link to="/contact">Contact</Link></li>
                 </ul>
@@ -153,7 +157,7 @@ function AppContent() {
                   <li><Link to="/tutorials">Builds</Link></li>
                   <li><Link to="/tutorials">Pro Strategies</Link></li>
                   <li><Link to="/tutorials">Team Tactics</Link></li>
-                  <li><Link to="/tutorials">Tips & Tricks</Link></li>
+                  <li><Link to="/downloads">Downloads</Link></li>
                 </ul>
               </Col>
               <Col lg={3} md={6}>
