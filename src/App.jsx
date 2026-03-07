@@ -8,7 +8,6 @@ import Home from './components/Home'
 import Tutorials from './components/Tutorials'
 import About from './components/About'
 import Contact from './components/Contact'
-import Admin from './components/Admin'
 import TutorialDetail from './components/TutorialDetail'
 import ChatWidget from './components/ChatWidget'
 import ConvoPage from './components/ConvoPage'
@@ -23,7 +22,6 @@ function AppContent() {
   const [bellAnimate, setBellAnimate] = useState(false)
   const navigate = useNavigate()
 
-  // Listen for new tutorials added in last 7 days
   useEffect(() => {
     const tutorialsRef = ref(database, 'tutorials/')
     const unsubscribe = onValue(tutorialsRef, (snapshot) => {
@@ -112,7 +110,6 @@ function AppContent() {
                 />
               </div>
 
-              {/* 🔔 NOTIFICATION BELL — replaces admin button */}
               <button
                 onClick={handleBellClick}
                 className="pmc-bell-btn"
@@ -138,12 +135,10 @@ function AppContent() {
           <Route path="/tutorial/:id" element={<TutorialDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/chat" element={<ConvoPage />} />
         </Routes>
       </Container>
 
-      {/* FOOTER */}
       <footer className="pmc-footer">
         <Container>
           <div className="footer-top">
@@ -224,7 +219,7 @@ function AppContent() {
         </Container>
       </footer>
 
-      {!['/admin', '/chat'].includes(location.pathname) && <ChatWidget />}
+      {location.pathname !== '/chat' && <ChatWidget />}
     </div>
   )
 }
