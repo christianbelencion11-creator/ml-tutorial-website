@@ -2307,3 +2307,480 @@ body {
   .dl-hero-title-main { font-size: 2.5rem; }
   .dl-hero-title-sub { font-size: 0.8rem; }
 }
+
+/* ===== NAVBAR ICON FIX ===== */
+.nav-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.nav-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  top: 0 !important;
+  vertical-align: middle !important;
+  font-size: 0.95rem !important;
+}
+.Nav .nav-item, .navbar-nav .nav-item {
+  line-height: 1 !important;
+}
+/* Bell button fix */
+.pmc-bell-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  line-height: 1 !important;
+}
+.bell-icon-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.bell-icon {
+  display: block !important;
+  font-size: 1rem !important;
+}
+
+/* ============================================================
+   TUTORIALS PAGE — REDESIGN
+   Append this to PMC-Gaming-Wiki/src/App.css
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+/* ── LOADING ── */
+.tut-loading-screen {
+  min-height: 60vh;
+  display: flex; align-items: center; justify-content: center;
+}
+.tut-loading-inner {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+  position: relative;
+}
+.tut-loading-ring {
+  width: 70px; height: 70px;
+  border: 3px solid #1a0000;
+  border-top-color: #ff0000;
+  border-radius: 50%;
+  animation: tutSpin 0.8s linear infinite;
+}
+@keyframes tutSpin { to { transform: rotate(360deg); } }
+.tut-loading-icon {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ff0000; font-size: 1.6rem;
+}
+.tut-loading-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem; letter-spacing: 3px;
+  color: #333; margin: 0;
+}
+
+/* ── PAGE WRAPPER ── */
+.tut-page {
+  min-height: 100vh;
+  background: #000;
+}
+
+/* ── HERO ── */
+.tut-hero {
+  position: relative;
+  min-height: 420px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  border-bottom: 3px solid #ff0000;
+  margin-bottom: 0;
+}
+.tut-hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 60%, rgba(255,0,0,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 40%, rgba(255,60,0,0.10) 0%, transparent 55%),
+    linear-gradient(180deg, #000 0%, #0a0000 100%);
+  background-image:
+    linear-gradient(rgba(255,0,0,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,0,0,0.035) 1px, transparent 1px),
+    radial-gradient(ellipse at 15% 60%, rgba(255,0,0,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 40%, rgba(255,60,0,0.10) 0%, transparent 55%);
+  background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%;
+}
+.tut-hero-content {
+  position: relative; z-index: 2;
+  text-align: center;
+  padding: 3.5rem 1.5rem 3rem;
+  width: 100%; max-width: 760px;
+}
+
+/* Eyebrow */
+.tut-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,0,0,0.08);
+  border: 1px solid rgba(255,0,0,0.25);
+  padding: 5px 16px; margin-bottom: 1.2rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 3px;
+  color: #ff0000;
+}
+.tut-eyebrow-icon { font-size: 0.8rem; animation: tutFirePulse 1.2s ease-in-out infinite; }
+@keyframes tutFirePulse { 0%,100%{opacity:.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.2)} }
+
+/* Title */
+.tut-hero-title {
+  margin: 0 0 0.6rem;
+  line-height: 0.9;
+}
+.tut-title-top {
+  display: block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 4.5rem;
+  color: #ffffff;
+  letter-spacing: 12px;
+  text-shadow: 0 0 40px rgba(255,0,0,0.2);
+}
+.tut-title-main {
+  display: block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 7rem;
+  background: linear-gradient(135deg, #ff0000 0%, #ff4400 50%, #ff0000 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 8px;
+  line-height: 0.85;
+  filter: drop-shadow(0 0 30px rgba(255,0,0,0.4));
+}
+.tut-hero-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem; color: #555;
+  letter-spacing: 2px; margin: 0.8rem 0 2rem;
+}
+
+/* Search bar */
+.tut-searchbar {
+  position: relative;
+  max-width: 540px;
+  margin: 0 auto 2rem;
+  display: flex; align-items: center;
+  background: #111;
+  border: 2px solid #1e1e1e;
+  border-radius: 4px;
+  transition: all 0.25s;
+  overflow: hidden;
+}
+.tut-searchbar-focus {
+  border-color: #ff0000;
+  box-shadow: 0 0 0 3px rgba(255,0,0,0.12), 0 0 30px rgba(255,0,0,0.15);
+  background: #0d0000;
+}
+.tut-search-icon {
+  position: absolute; left: 16px;
+  color: #ff0000; font-size: 0.9rem; pointer-events: none;
+  z-index: 1;
+}
+.tut-search-input {
+  width: 100%; flex: 1;
+  background: transparent;
+  border: none; outline: none;
+  color: #fff;
+  padding: 14px 42px 14px 46px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem; letter-spacing: 1px;
+}
+.tut-search-input::placeholder { color: #2e2e2e; }
+.tut-search-clear {
+  position: absolute; right: 14px;
+  background: #1a1a1a; border: none;
+  color: #555; cursor: pointer;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.tut-search-clear:hover { background: #ff0000; color: #fff; }
+
+/* Stats row */
+.tut-hero-stats {
+  display: inline-flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid #1a1a1a;
+  padding: 12px 28px;
+}
+.tut-hero-stat { text-align: center; padding: 0 20px; }
+.tut-stat-num {
+  display: block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem; color: #ff0000;
+  line-height: 1;
+}
+.tut-stat-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem; color: #444;
+  letter-spacing: 2px; margin-top: 2px;
+}
+.tut-hero-stat-divider {
+  width: 1px; height: 40px; background: #1e1e1e;
+}
+
+/* ── FILTER ROW ── */
+.tut-filter-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 0 16px;
+  border-bottom: 1px solid #111;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.tut-filter-scroll {
+  display: flex; gap: 8px; flex-wrap: wrap; flex: 1;
+}
+.tut-cat-pill {
+  padding: 6px 18px;
+  background: transparent;
+  border: 1px solid #1e1e1e;
+  color: #555;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.82rem; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.18s;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.tut-cat-pill:hover { border-color: #ff0000; color: #ff0000; background: rgba(255,0,0,0.04); }
+.tut-cat-active {
+  background: #ff0000 !important;
+  border-color: #ff0000 !important;
+  color: #000 !important;
+  font-weight: 900 !important;
+}
+.tut-filter-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; color: #333;
+  letter-spacing: 1px; white-space: nowrap;
+  flex-shrink: 0;
+}
+.tut-filter-page { color: #2a2a2a; }
+
+/* ── EMPTY STATE ── */
+.tut-empty {
+  text-align: center;
+  padding: 6rem 1rem;
+  color: #333;
+}
+.tut-empty-icon {
+  font-size: 3.5rem; display: block; margin-bottom: 1.5rem;
+  opacity: 0.4;
+}
+.tut-empty-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem; letter-spacing: 4px; color: #444;
+  margin-bottom: 0.5rem;
+}
+.tut-empty-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem; color: #2a2a2a; margin-bottom: 2rem;
+}
+.tut-empty-reset {
+  background: #ff0000; color: #000;
+  border: none; padding: 10px 28px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem; font-weight: 700;
+  letter-spacing: 2px; cursor: pointer;
+  transition: all 0.2s; border-radius: 3px;
+}
+.tut-empty-reset:hover { background: #cc0000; transform: translateY(-1px); }
+
+/* ── CARD GRID ── */
+.tut-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 24px;
+  padding-bottom: 8px;
+}
+
+/* ── CARD ── */
+.tut-card {
+  background: #0d0d0d;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
+  animation: tutCardIn 0.5s ease both;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+@keyframes tutCardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tut-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: border-color 0.28s;
+  pointer-events: none; z-index: 3;
+}
+.tut-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 24px 48px rgba(255,0,0,0.2), 0 8px 16px rgba(0,0,0,0.6);
+  border-color: #ff0000;
+}
+.tut-card:hover::before { border-color: rgba(255,0,0,0.2); }
+
+/* Thumbnail */
+.tut-card-thumb {
+  position: relative;
+  height: 185px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.tut-card-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+  display: block;
+}
+.tut-card:hover .tut-card-img { transform: scale(1.06); }
+
+/* Overlay */
+.tut-card-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.tut-card:hover .tut-card-overlay { opacity: 1; }
+.tut-play-btn {
+  width: 56px; height: 56px;
+  background: #ff0000;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  box-shadow: 0 0 30px rgba(255,0,0,0.6);
+  transform: scale(0.8);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.tut-card:hover .tut-play-btn { transform: scale(1); }
+.tut-card-watch {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 3px; color: #fff;
+}
+
+/* Badge */
+.tut-card-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 3px 12px;
+  border-radius: 3px;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+/* Card info */
+.tut-card-info {
+  padding: 1.2rem 1.4rem 1rem;
+  flex: 1; display: flex; flex-direction: column;
+  gap: 8px;
+}
+.tut-card-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.05rem; font-weight: 700;
+  color: #e8e8e8; line-height: 1.3;
+  letter-spacing: 0.3px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+.tut-card:hover .tut-card-title { color: #fff; }
+.tut-card-desc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem; color: #444;
+  line-height: 1.6; margin: 0; flex: 1;
+}
+.tut-card-meta {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid #161616;
+}
+.tut-card-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: #333;
+}
+.tut-card-cta {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 1.5px; color: #ff0000;
+  display: flex; align-items: center; gap: 5px;
+  transition: gap 0.2s;
+}
+.tut-card:hover .tut-card-cta { gap: 8px; }
+
+/* ── PAGINATION ── */
+.tut-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 4px; margin: 3rem 0 1rem; flex-wrap: wrap;
+}
+.tut-page-btn {
+  min-width: 40px; height: 40px; padding: 0 12px;
+  background: transparent;
+  border: 1px solid #1e1e1e;
+  color: #555;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem; cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  border-radius: 4px;
+}
+.tut-page-btn:hover:not(:disabled) {
+  border-color: #ff0000; color: #ff0000;
+  background: rgba(255,0,0,0.06);
+}
+.tut-page-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+.tut-page-active {
+  background: #ff0000 !important;
+  border-color: #ff0000 !important;
+  color: #000 !important;
+  font-weight: 900;
+}
+.tut-page-nav { font-size: 0.76rem; letter-spacing: 1px; padding: 0 16px; }
+.tut-page-dots {
+  color: #2a2a2a;
+  font-size: 1rem;
+  display: flex; align-items: center; padding: 0 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tut-results-info {
+  text-align: center;
+  color: #2a2a2a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; letter-spacing: 2px;
+  margin-bottom: 3rem;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .tut-title-top  { font-size: 3rem; }
+  .tut-title-main { font-size: 5rem; }
+  .tut-hero-stats { padding: 10px 16px; }
+  .tut-hero-stat  { padding: 0 12px; }
+  .tut-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 480px) {
+  .tut-title-main { font-size: 4rem; }
+  .tut-search-input { font-size: 0.82rem; }
+}
